@@ -18,7 +18,7 @@ public class TiebaScheduler {
 	
 	public void link() {
 		BaiduTiebaDB tb = new BaiduTiebaDB();
-		scheduler.scheduleAtFixedRate(tb, 0, RandomUtil.randomInt(240, 300), SECONDS);
+		scheduler.scheduleAtFixedRate(tb, 0, RandomUtil.randomInt(300, 360), SECONDS);
 	}
 	
 	public static void main(String[] args) {
