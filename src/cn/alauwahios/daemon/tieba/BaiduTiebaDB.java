@@ -27,7 +27,6 @@ public class BaiduTiebaDB implements Runnable {
 	private static final String QUESTION_MARK= "?";
 	private static final String SHORT_IDX = QUESTION_MARK + SHORT_IDX_UNMARK;
 	private static final int SHORT_INDEX = 14;
-	//private static final List<String> denyList = new ArrayList<String>();
 	
 	BaiduYunDB baiduYun = new BaiduYunDB();
 	
@@ -45,8 +44,6 @@ public class BaiduTiebaDB implements Runnable {
 			Elements eles = JsoupUtil.getByAttrClass(urlPage1, className);
 			Element ele = eles.get(0);
 			int length = ele.getElementsByTag("span").size();
-			//List<String> deleteList = new ArrayList<String>();
-			//List<String> resultList = new ArrayList<String>();
 			for (int i = 0; i < length; i++) {
 				String panLink = ele.getElementsByClass("p_content").get(i).text();
 				if ((!panLink.contains("失效")) && (!panLink.contains("复制"))) {
@@ -84,15 +81,12 @@ public class BaiduTiebaDB implements Runnable {
 					if (panLink.contains("panbaiducom")) {
 						panLink = panLink.replace("panbaiducom", "pan.baidu.com");
 					}
+					if(panLink.contains("mboxhomepage")){
+						panLink = panLink.replace("mboxhomepage", "mbox/homepage");
+					}
 
-					//String resultLink = "<a href=\"" + replyLink + "\" target=\"_blank\">" + replyName + "</a>"
-							//+ " 贴吧：<a href=\"" + tiebaLink + "\" target=\"_blank\">" + tiebaName + "</a>" + " 发布时间："
-							//+ postTime;
-					//String spe = "<br />";
-					//String resultpanLink = "<a href=\"" + panLink + "\" target=\"_blank\">" + panLink + "</a>";
 					String panShortLink = UrlUtil.getUrlParamterValue(panLink, "short");
 					// 优化
-					//System.out.println(panLink);
 					if(panLink.startsWith(SHORT_IDX_UNMARK)){
 						panLink = HOME_PAGE_URL + QUESTION_MARK + panLink;
 						panShortLink = UrlUtil.getUrlParamterValue(panLink, "short");
@@ -100,13 +94,6 @@ public class BaiduTiebaDB implements Runnable {
 					if ((panLink.contains("pan.baidu.com"))
 							&& null != panShortLink 
 							&& panShortLink.matches("^[a-zA-Z0-9]{6,8}+$")) {
-						//panShortLink 网盘短链接
-						//panLink 网盘链接
-						//replyLink 回复链接
-						//replyName 回复名字
-						//tiebaLink 贴吧链接
-						//tiebaName 贴吧名字
-						//postTime 发布时间
 						
 						//网盘表
 						BaiduWangpanVO bwvo = new BaiduWangpanVO();
@@ -133,25 +120,12 @@ public class BaiduTiebaDB implements Runnable {
 						btvo.setRemark(Constants.DEFAULT_REMARK);
 						AlauwahiosDao.saveBaiduTieba(btvo);
 						
-						/*String requestQuery = UrlUtil.getUrlParamter(panLink);
-						if(!deleteList.contains(panLink)
-								&& !denyList.contains(requestQuery)){
-							deleteList.add(panLink);
-						    resultList.add(resultLink + spe + resultpanLink);
-						}*/
 					}
 				}
 			}
 			
 			// 插入baiduyun.xyz的抓取
 			baiduYun.getContent();
-			/**
-			 * 不再写文件
-			 */
-			//List<String> baiduYunList = baiduYun.getContent();
-			//resultList.add("<br />以下的时间相对较前，在上面的不够用时可以尝试加群！<br />");
-			//resultList.addAll(baiduYunList);
-			//FileOperate.saveToFile(resultList);
 		} catch (Exception e) {
 			logger.error("[tieba抓取出错了]", e);
 			SleepUtil.sleepBySecond(30, 30);
