@@ -28,7 +28,7 @@ public class BaiduTiebaDB implements Runnable {
 	private static final String SHORT_IDX = QUESTION_MARK + SHORT_IDX_UNMARK;
 	private static final int SHORT_INDEX = 14;
 	
-	BaiduYunDB baiduYun = new BaiduYunDB();
+	//BaiduYunDB baiduYun = new BaiduYunDB();
 	
 	public void run() {
 		getBaiduWangpan();
@@ -125,7 +125,9 @@ public class BaiduTiebaDB implements Runnable {
 			}
 			
 			// 插入baiduyun.xyz的抓取
-			baiduYun.getContent();
+			//baiduYun.getContent();
+			// 插入01dyzy.com的抓取
+			YunqunzuDB.getYunqunzu();
 		} catch (Exception e) {
 			logger.error("[tieba抓取出错了]", e);
 			SleepUtil.sleepBySecond(30, 30);

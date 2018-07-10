@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
@@ -239,6 +240,45 @@ public class HttpRequest {
 		}
 		return result;
 
+	}
+	
+	/**
+	 * 获取跳转后的地址 -- 302
+	 * 
+	 * @param urlName
+	 * @return
+	 */
+	public static String getLinkAfterRediect(String url) {
+		HttpURLConnection conn = null;
+		try {
+			URL realUrl = new URL(url);
+			// 打开和URL之间的连接
+			conn = (HttpURLConnection) realUrl.openConnection();
+			// 设置通用的请求属性
+			conn.setRequestMethod("GET");
+			conn.addRequestProperty("Accept-Charset", "UTF-8;");
+			conn.setRequestProperty("accept", "*/*");
+			conn.setRequestProperty("connection", "Keep-Alive");
+			conn.setRequestProperty("user-agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+			conn.setInstanceFollowRedirects(false);
+			
+			// 建立实际的连接
+			conn.connect();
+			String location = conn.getHeaderField("Location");
+			if (!StringUtils.isBlank(location)) {
+			   return location;
+			} 
+		} catch (HttpException e) {
+			e.printStackTrace();
+			logger.error("[sekiftutil]提供获取网页内容的类--获取网页内容：", e);
+		} catch (IOException e) {
+			e.printStackTrace();
+			logger.error("[sekiftutil]提供获取网页内容的类--获取网页内容：", e);
+		} finally {
+			// 释放连接
+			conn.disconnect();
+		}
+		return null;
 	}
 
 }
