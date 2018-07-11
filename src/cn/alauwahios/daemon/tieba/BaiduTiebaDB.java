@@ -19,26 +19,21 @@ public class BaiduTiebaDB implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(BaiduTiebaDB.class);
 	private static final String HOME_URL = "http://tieba.baidu.com";
 	private static final String HOME_PAGE_URL = "https://pan.baidu.com/mbox/homepage";
-	private static final String HTTP = "http://";
-	private static final int HTTP_INDEX = 48;
-	private static final String HTTPS = "https://";
-	private static final int HTTPS_INDEX = 49;
 	private static final String SHORT_IDX_UNMARK = "short=";
-	private static final String QUESTION_MARK= "?";
-	private static final String SHORT_IDX = QUESTION_MARK + SHORT_IDX_UNMARK;
-	private static final int SHORT_INDEX = 14;
-	
-	//BaiduYunDB baiduYun = new BaiduYunDB();
-	
+	private static final String QUESTION_MARK = "?";
+
+	// BaiduYunDB baiduYun = new BaiduYunDB();
+
 	public void run() {
 		getBaiduWangpan();
 	}
-	
+
 	public void getBaiduWangpan() {
 		String keyWord = "short";
-		String urlPage1 = "http://tieba.baidu.com/f/search/res?isnew=1&kw=&qw=" + keyWord
-				+ "&rn="+RandomUtil.randomInt(10, 50)+"&un=&only_thread=0&sm=1&sd=&ed=&pn=1&ie=utf-8";
-		//String urlPage1 = "http://tieba.baidu.com/f/search/res?ie=utf-8&qw=" + keyWord;
+		String urlPage1 = "http://tieba.baidu.com/f/search/res?isnew=1&kw=&qw=" + keyWord + "&rn="
+				+ RandomUtil.randomInt(10, 50) + "&un=&only_thread=0&sm=1&sd=&ed=&pn=1&ie=utf-8";
+		// String urlPage1 = "http://tieba.baidu.com/f/search/res?ie=utf-8&qw="
+		// + keyWord;
 		String className = "s_post_list";
 		try {
 			Elements eles = JsoupUtil.getByAttrClass(urlPage1, className);
@@ -46,7 +41,18 @@ public class BaiduTiebaDB implements Runnable {
 			int length = ele.getElementsByTag("span").size();
 			for (int i = 0; i < length; i++) {
 				String panLink = ele.getElementsByClass("p_content").get(i).text();
-				if ((!panLink.contains("失效")) && (!panLink.contains("复制"))) {
+				try {
+					if (panLink.contains("short=")) {
+						panLink = panLink.substring(panLink.indexOf("short=") + 6, panLink.length());
+						panLink = panLink.substring(0, 7);
+					}
+				} catch (Exception e) {
+					logger.error("截取出错了，请检查：panLink为：" + 
+				               ele.getElementsByClass("p_content").get(i).text() + ";错误信息为：", e);
+					continue;
+				}
+				if (panLink.matches("^[a-zA-Z0-9]{6,8}+$")) {
+					panLink = HOME_PAGE_URL + QUESTION_MARK + SHORT_IDX_UNMARK + panLink;
 					Element eLink = ele.getElementsByTag("span").get(i);
 					String replyLink = HOME_URL + eLink.select("a").attr("href");
 					String replyName = eLink.select("a").text();
@@ -57,75 +63,37 @@ public class BaiduTiebaDB implements Runnable {
 
 					String postTime = ele.getElementsByClass("p_date").get(i).text();
 
-					try{
-					if (panLink.startsWith(HTTP)) {
-						panLink = panLink.substring(0, HTTP_INDEX);
-					} else if (panLink.startsWith(HTTPS)) {
-						panLink = panLink.substring(0, HTTPS_INDEX);
-					} else if (panLink.indexOf(HTTP) > -1) {
-						int start = panLink.indexOf(HTTP);
-						panLink = panLink.substring(start, start + HTTP_INDEX);
-					} else if (panLink.indexOf(HTTPS) > -1) {
-						int start = panLink.indexOf(HTTPS);
-						panLink = panLink.substring(start, start + HTTPS_INDEX);
-					} else if (panLink.indexOf(SHORT_IDX) > -1) {
-						int start = panLink.indexOf(SHORT_IDX);
-						panLink = HOME_PAGE_URL + panLink.substring(start, start + SHORT_INDEX);
-					}
-					}catch(Exception e){
-						logger.error("截取出错了，请检查：panLink="+panLink+";错误信息为：", e);
-					}
-					if (panLink.endsWith(".")) {
-						panLink = panLink.replace(".", "");
-					}
-					if (panLink.contains("panbaiducom")) {
-						panLink = panLink.replace("panbaiducom", "pan.baidu.com");
-					}
-					if(panLink.contains("mboxhomepage")){
-						panLink = panLink.replace("mboxhomepage", "mbox/homepage");
-					}
-
 					String panShortLink = UrlUtil.getUrlParamterValue(panLink, "short");
-					// 优化
-					if(panLink.startsWith(SHORT_IDX_UNMARK)){
-						panLink = HOME_PAGE_URL + QUESTION_MARK + panLink;
-						panShortLink = UrlUtil.getUrlParamterValue(panLink, "short");
-					}
-					if ((panLink.contains("pan.baidu.com"))
-							&& null != panShortLink 
-							&& panShortLink.matches("^[a-zA-Z0-9]{6,8}+$")) {
-						
-						//网盘表
-						BaiduWangpanVO bwvo = new BaiduWangpanVO();
-						bwvo.setPanShortLink(panShortLink);
-						bwvo.setPanLink(panLink);
-						bwvo.setReplyName(replyName.replace("回复:", ""));
-						bwvo.setReplyLink(replyLink);
-						bwvo.setTiebaLink(tiebaLink);
-						bwvo.setTiebaName(tiebaName);
-						bwvo.setShortLink(Constants.DEFAULT_SHORT_LINK);
-						bwvo.setPostTime(DateUtil.convertStrToDate(postTime+":00:00",DateUtil.DEFAULT_LONG_DATE_FORMAT));
-						bwvo.setType(Constants.DEFAULT_TYPE);
-						bwvo.setRemark(Constants.DEFAULT_REMARK);
-						AlauwahiosDao.saveBaiduWangpan(bwvo);
-						
-						//贴吧表
-						String tiebaKw = UrlUtil.getUrlParamterValue(tiebaLink, "kw");
-						BaiduTiebaVO btvo = new BaiduTiebaVO();
-						btvo.setTiebaKw(tiebaKw);
-						btvo.setTiebaName(tiebaName);
-						btvo.setTiebaLink(tiebaLink);
-						btvo.setShortLink(Constants.DEFAULT_SHORT_LINK);
-						btvo.setType(Constants.DEFAULT_TYPE);
-						btvo.setRemark(Constants.DEFAULT_REMARK);
-						AlauwahiosDao.saveBaiduTieba(btvo);
-						
-					}
+
+					// 网盘表
+					BaiduWangpanVO bwvo = new BaiduWangpanVO();
+					bwvo.setPanShortLink(panShortLink);
+					bwvo.setPanLink(panLink);
+					bwvo.setReplyName(replyName.replace("回复:", ""));
+					bwvo.setReplyLink(replyLink);
+					bwvo.setTiebaLink(tiebaLink);
+					bwvo.setTiebaName(tiebaName);
+					bwvo.setShortLink(Constants.DEFAULT_SHORT_LINK);
+					bwvo.setPostTime(DateUtil.convertStrToDate(postTime + ":00:00", DateUtil.DEFAULT_LONG_DATE_FORMAT));
+					bwvo.setType(Constants.DEFAULT_TYPE);
+					bwvo.setRemark(Constants.DEFAULT_REMARK);
+					AlauwahiosDao.saveBaiduWangpan(bwvo);
+
+					// 贴吧表
+					String tiebaKw = UrlUtil.getUrlParamterValue(tiebaLink, "kw");
+					BaiduTiebaVO btvo = new BaiduTiebaVO();
+					btvo.setTiebaKw(tiebaKw);
+					btvo.setTiebaName(tiebaName);
+					btvo.setTiebaLink(tiebaLink);
+					btvo.setShortLink(Constants.DEFAULT_SHORT_LINK);
+					btvo.setType(Constants.DEFAULT_TYPE);
+					btvo.setRemark(Constants.DEFAULT_REMARK);
+					AlauwahiosDao.saveBaiduTieba(btvo);
 				}
 			}
-			
+
 			// 插入baiduyun.xyz的抓取
-			//baiduYun.getContent();
+			// baiduYun.getContent();
 			// 插入01dyzy.com的抓取
 			YunqunzuDB.getYunqunzu();
 		} catch (Exception e) {
