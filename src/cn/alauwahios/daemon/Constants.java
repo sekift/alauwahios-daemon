@@ -23,6 +23,12 @@ public class Constants {
 	// 类别默认为0
 	public static final int DEFAULT_TYPE = 0;
 	
+	//fw视频类别为100201
+	public static final int FW_VIDEO_TYPE = 100201;
+	
+	//状态，默认可用为1
+	public static final int DEFAULT_STATUS = 1;
+	
 	// 备用字段默认值为""
 	public static final String DEFAULT_REMARK = "";
 	

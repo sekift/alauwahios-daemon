@@ -1,6 +1,7 @@
 package cn.alauwahios.daemon.dao;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import cn.alauwahios.daemon.vo.BaiduTiebaVO;
 import cn.alauwahios.daemon.vo.BaiduTieziVO;
 import cn.alauwahios.daemon.vo.BaiduWangpanVO;
 import cn.alauwahios.daemon.vo.BaiduYunVO;
+import cn.alauwahios.daemon.vo.FxZiyuanVO;
 
 /**
  * 操作数据库DAO层
@@ -148,48 +150,90 @@ public class AlauwahiosDao {
 		}
 		return result;
 	}
+	
+	/**
+	 * 57fx信息
+	 * @param vo
+	 * @return
+	 */
+	public static boolean saveFxZiyuan(FxZiyuanVO vo) {
+		boolean result = false;
+		if (null == vo) {
+			return result;
+		}
+		String sql = "INSERT INTO fx_ziyuan(fxKW,fxName,"
+				+ " fxLink,shortLink,postTime,createTime,updateTime,type,status,star,sort,hot,visits,remark)"
+				+ " VALUES(?,?,?,?,?,now(),now(),?,1,0,1,1,0,?) ON DUPLICATE KEY UPDATE updateTime=now(),hot=hot+1";
+		List<Object> params = new ArrayList<Object>();
+		params.add(vo.getFxKW());
+		params.add(vo.getFxName());
+		params.add(vo.getFxLink());
+		params.add(vo.getShortLink());
+		params.add(vo.getPostTime());
+		params.add(vo.getType());
+		params.add(vo.getRemark());
+		
+		try {
+			result = DBOperate.update(Constants.ALIAS_MASTER, sql, params.toArray()) > 0;
+		} catch (Exception e) {
+			result = false;
+			logger.error("[fx资源]插入数据出错", e);
+		}
+		return result;
+	}
+	
+	/**
+	 * 获取最后一条的提交时间
+	 * @param args
+	 */
+	public static Date getFxMaxPostTime(){
+		String sql = "SELECT MAX(postTime) FROM fx_ziyuan LIMIT 1;";
+		Date postTime = (Date) DBOperate.query4ObjectQuietly(Constants.ALIAS_SLAVE, sql);
+		return postTime;
+	}
 
 	public static void main(String args[]) {
-		BaiduWangpanVO bwvo = new BaiduWangpanVO();
-		bwvo.setPanShortLink("bo2acX5");
-		bwvo.setPanLink("https://pan.baidu.com/mbox/homepage?short=bo2acX5");
-		bwvo.setReplyName("http://pan.baid");
-		bwvo.setReplyLink("http://tieba.baidu.com/p/5269184604?pid=120170990029&cid=0#120170990029");
-		bwvo.setTiebaName("蓝燕");
-		bwvo.setTiebaLink("http://tieba.baidu.com/f?kw=%C0%B6%D1%E0");
-		bwvo.setShortLink("");
-		bwvo.setPostTime(DateUtil.convertStrToDate("2018-06-08 15:10:00:00", DateUtil.DEFAULT_LONG_DATE_FORMAT));
-		bwvo.setType(1);
-		bwvo.setRemark("");
-		System.out.println(saveBaiduWangpan(bwvo));
-		
-		BaiduTiebaVO btvo = new BaiduTiebaVO();
-		btvo.setTiebaKw("%C0%B6%D1%E0");
-		btvo.setTiebaName("蓝燕");
-		btvo.setTiebaLink("http://tieba.baidu.com/f?kw=%C0%B6%D1%E0");
-		btvo.setShortLink("");
-		btvo.setType(1);
-		btvo.setRemark("");
-		System.out.println(saveBaiduTieba(btvo));
-		
-		BaiduTieziVO bzvo = new BaiduTieziVO();
-		bzvo.setTieziId(5487025563L);
-		bzvo.setTieziName("谁有缘之空的百度云，不要压缩包。急求");
-		bzvo.setTieziLink("http://tieba.baidu.com/p/5269184604");
-		bzvo.setTiebaName("浅色不过");
-		bzvo.setTiebaLink("http://tieba.baidu.com/f?kw=%C0%B6%D1%E0");
-		bzvo.setShortLink("");
-		bzvo.setPostTime(DateUtil.convertStrToDate("2018-06-08 15:10:00:00", DateUtil.DEFAULT_LONG_DATE_FORMAT));
-		bzvo.setType(1);
-		bzvo.setRemark("");
-		System.out.println(saveBaiduTiezi(bzvo));
-		
-		BaiduYunVO byvo = new BaiduYunVO();
-		byvo.setPanShortLink("bo2acX5");
-		byvo.setPanLink("https://pan.baidu.com/mbox/homepage?short=bo2acX5");
-		byvo.setShortLink("");
-		byvo.setType(0);
-		byvo.setRemark("");
-		System.out.println(saveBaiduYun(byvo));
+		System.out.println(getFxMaxPostTime());
+//		BaiduWangpanVO bwvo = new BaiduWangpanVO();
+//		bwvo.setPanShortLink("bo2acX5");
+//		bwvo.setPanLink("https://pan.baidu.com/mbox/homepage?short=bo2acX5");
+//		bwvo.setReplyName("http://pan.baid");
+//		bwvo.setReplyLink("http://tieba.baidu.com/p/5269184604?pid=120170990029&cid=0#120170990029");
+//		bwvo.setTiebaName("蓝燕");
+//		bwvo.setTiebaLink("http://tieba.baidu.com/f?kw=%C0%B6%D1%E0");
+//		bwvo.setShortLink("");
+//		bwvo.setPostTime(DateUtil.convertStrToDate("2018-06-08 15:10:00:00", DateUtil.DEFAULT_LONG_DATE_FORMAT));
+//		bwvo.setType(1);
+//		bwvo.setRemark("");
+//		System.out.println(saveBaiduWangpan(bwvo));
+//		
+//		BaiduTiebaVO btvo = new BaiduTiebaVO();
+//		btvo.setTiebaKw("%C0%B6%D1%E0");
+//		btvo.setTiebaName("蓝燕");
+//		btvo.setTiebaLink("http://tieba.baidu.com/f?kw=%C0%B6%D1%E0");
+//		btvo.setShortLink("");
+//		btvo.setType(1);
+//		btvo.setRemark("");
+//		System.out.println(saveBaiduTieba(btvo));
+//		
+//		BaiduTieziVO bzvo = new BaiduTieziVO();
+//		bzvo.setTieziId(5487025563L);
+//		bzvo.setTieziName("谁有缘之空的百度云，不要压缩包。急求");
+//		bzvo.setTieziLink("http://tieba.baidu.com/p/5269184604");
+//		bzvo.setTiebaName("浅色不过");
+//		bzvo.setTiebaLink("http://tieba.baidu.com/f?kw=%C0%B6%D1%E0");
+//		bzvo.setShortLink("");
+//		bzvo.setPostTime(DateUtil.convertStrToDate("2018-06-08 15:10:00:00", DateUtil.DEFAULT_LONG_DATE_FORMAT));
+//		bzvo.setType(1);
+//		bzvo.setRemark("");
+//		System.out.println(saveBaiduTiezi(bzvo));
+//		
+//		BaiduYunVO byvo = new BaiduYunVO();
+//		byvo.setPanShortLink("bo2acX5");
+//		byvo.setPanLink("https://pan.baidu.com/mbox/homepage?short=bo2acX5");
+//		byvo.setShortLink("");
+//		byvo.setType(0);
+//		byvo.setRemark("");
+//		System.out.println(saveBaiduYun(byvo));
 	}
 }
