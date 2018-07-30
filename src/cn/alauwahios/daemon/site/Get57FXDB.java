@@ -43,7 +43,7 @@ public class Get57FXDB implements Runnable {
 				Date postTime = DateUtil.convertStrToDate(postTimeStr, DateUtil.DEFAULT_LONG_DATE_FORMAT);
 				//判断爬取到什么地方
 				Date lastPostTime = AlauwahiosDao.getFxMaxPostTime();
-				if(!postTime.after(lastPostTime)){
+				if(lastPostTime !=null && !postTime.after(lastPostTime)){
 					break;
 				}
 				
