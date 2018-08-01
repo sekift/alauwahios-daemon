@@ -26,7 +26,7 @@ public class TiebaScheduler {
 	
 	public void fx() {
 		Get57FXDB fx = new Get57FXDB();
-		schedulerFx.scheduleAtFixedRate(fx, 0, RandomUtil.randomInt(30, 40), MINUTES);
+		schedulerFx.scheduleAtFixedRate(fx, 0, RandomUtil.randomInt(8, 10), MINUTES);
 	}
 	
 	public static void main(String[] args) {
