@@ -22,7 +22,7 @@ import cn.alauwahios.daemon.vo.BaiduYunVO;
  */
 public class YunqunzuDB {
 	private static final Logger logger = LoggerFactory.getLogger(YunqunzuDB.class);
-	private static final String YunqunzuUrl = "http://www.01dyzy.com/";
+	private static final String YunqunzuUrl = "http://www.01yungroup.com";
 
 	public static void getYunqunzu() {
 		Document doc = null;
@@ -31,9 +31,8 @@ public class YunqunzuDB {
 			Elements eles = doc.getElementsByClass("group-name");
 			for(Element ele : eles){
 				String originUrl = ele.select("a").attr("href");
-			    if(originUrl.startsWith("http://")){
-			    	String url = HttpRequest.getLinkAfterRediect(originUrl);
-			    	//System.out.println(url);
+			    if(originUrl.startsWith("/")){
+			    	String url = HttpRequest.getLinkAfterRediect(YunqunzuUrl + originUrl);
 			    	// 写数据库
 					BaiduYunVO byvo = new BaiduYunVO();
 					String panShortLink = UrlUtil.getUrlParamterValue(url, "short");

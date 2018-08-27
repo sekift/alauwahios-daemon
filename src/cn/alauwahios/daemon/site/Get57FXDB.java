@@ -16,7 +16,7 @@ import cn.alauwahios.daemon.vo.FxZiyuanVO;
 
 public class Get57FXDB implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(Get57FXDB.class);
-	private static final String HOME_URL = "http://www.wwaaffxx.com"; //57FX
+	private static final String HOME_URL = "http://www.57fx.com"; //57fx wwaaffxx
 	private static final String VIDEO_URL = HOME_URL + "/file-sp-new-1/";// 视频资源
 
 	public void run() {
@@ -70,8 +70,6 @@ public class Get57FXDB implements Runnable {
 			}
 		} catch (Exception e) {
 			logger.error("[fx资源抓取出错了]，将重新抓取", e);
-			SleepUtil.sleepBySecond(60, 70);
-			getFXZiyuan();
 		}
 	}
 	
