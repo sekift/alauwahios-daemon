@@ -24,11 +24,11 @@ public class Get57FXDB implements Runnable {
 	}
 
 	public void getFXZiyuan() {
-		Document doc = JsoupUtil.getDocByConnect(VIDEO_URL);
-		Elements elesFn = doc.getElementsByClass("c_fn").select("a");
-
 		try {
-			//判断爬取到什么地方
+		    Document doc = JsoupUtil.getDocByConnect(VIDEO_URL);
+		    Elements elesFn = doc.getElementsByClass("c_fn").select("a");
+
+		    //判断爬取到什么地方
 			Date lastPostTime = AlauwahiosDao.getFxMaxPostTime();
 			for (int i = 0; i < elesFn.size(); i++) {//
 				String fxUrl = HOME_URL + elesFn.get(i).attr("href");
@@ -70,6 +70,8 @@ public class Get57FXDB implements Runnable {
 			}
 		} catch (Exception e) {
 			logger.error("[fx资源抓取出错了]，将重新抓取", e);
+			SleepUtil.sleepBySecond(120, 150);
+			getFXZiyuan();
 		}
 	}
 	
