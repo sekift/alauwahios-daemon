@@ -9,7 +9,6 @@ import cn.alauwahios.daemon.Constants;
 import cn.alauwahios.daemon.dao.AlauwahiosDao;
 import cn.alauwahios.daemon.util.DateUtil;
 import cn.alauwahios.daemon.util.JsoupUtil;
-import cn.alauwahios.daemon.util.RandomUtil;
 import cn.alauwahios.daemon.util.SleepUtil;
 import cn.alauwahios.daemon.util.UrlUtil;
 import cn.alauwahios.daemon.vo.BaiduTiebaVO;
@@ -31,9 +30,8 @@ public class BaiduTiebaDB implements Runnable {
 	public void getBaiduWangpan() {
 		String keyWord = "short";
 		String urlPage1 = "http://tieba.baidu.com/f/search/res?isnew=1&kw=&qw=" + keyWord + "&rn="
-				+ RandomUtil.randomInt(10, 50) + "&un=&only_thread=0&sm=1&sd=&ed=&pn=1&ie=utf-8";
-		// String urlPage1 = "http://tieba.baidu.com/f/search/res?ie=utf-8&qw="
-		// + keyWord;
+				+ 10 + "&un=&only_thread=0&sm=1&sd=&ed=&pn=1&ie=utf-8";
+		//String urlPage1 = "http://tieba.baidu.com/f/search/res?ie=utf-8&qw=" + keyWord;
 		String className = "s_post_list";
 		try {
 			Elements eles = JsoupUtil.getByAttrClass(urlPage1, className);
@@ -98,7 +96,7 @@ public class BaiduTiebaDB implements Runnable {
 			YunqunzuDB.getYunqunzu();
 		} catch (Exception e) {
 			logger.error("[tieba抓取出错了]", e);
-			SleepUtil.sleepBySecond(30, 30);
+			SleepUtil.sleepBySecond(100, 100);
 			getBaiduWangpan();
 		}
 	}
