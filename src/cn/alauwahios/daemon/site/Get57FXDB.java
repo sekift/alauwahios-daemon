@@ -86,6 +86,14 @@ public class Get57FXDB implements Runnable {
 	public static String changeFileName(String fxName){
 		fxName = fxName.replace("微信", "");
 		fxName = fxName.replace("公众号", "");
+		fxName = fxName.replace("mp4", " ");
+		fxName = fxName.replace("mkv", " ");
+		fxName = fxName.replace("字幕组", " ");
+		fxName = fxName.replace("字幕", "");
+		fxName = fxName.replace("更多资源", "");
+		fxName = fxName.replace("资源", " ");
+		fxName = fxName.replace("西图澜娅", "");
+		fxName = fxName.replace("aac", " ");
 		fxName = fxName + PAN00;
 		return fxName;
 	}
