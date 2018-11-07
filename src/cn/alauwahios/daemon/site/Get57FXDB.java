@@ -94,6 +94,8 @@ public class Get57FXDB implements Runnable {
 		fxName = fxName.replace("资源", " ");
 		fxName = fxName.replace("西图澜娅", "");
 		fxName = fxName.replace("aac", " ");
+		fxName = fxName.replace("01", " 01");
+		fxName = fxName.replace("02", " 02");
 		fxName = fxName + PAN00;
 		return fxName;
 	}

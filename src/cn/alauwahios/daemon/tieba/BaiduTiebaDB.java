@@ -21,7 +21,7 @@ public class BaiduTiebaDB implements Runnable {
 	private static final String SHORT_IDX_UNMARK = "short=";
 	private static final String QUESTION_MARK = "?";
 
-	// BaiduYunDB baiduYun = new BaiduYunDB();
+	BaiduYunDB baiduYun = new BaiduYunDB();
 
 	public void run() {
 		getBaiduWangpan();
@@ -91,7 +91,7 @@ public class BaiduTiebaDB implements Runnable {
 			}
 
 			// 插入baiduyun.xyz的抓取
-			// baiduYun.getContent();
+			baiduYun.getContent();
 			// 插入01dyzy.com的抓取
 			YunqunzuDB.getYunqunzu();
 		} catch (Exception e) {
