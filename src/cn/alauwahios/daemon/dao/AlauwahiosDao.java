@@ -182,6 +182,37 @@ public class AlauwahiosDao {
 	}
 	
 	/**
+	 * friok信息
+	 * @param vo
+	 * @return
+	 */
+	public static boolean saveFriok(FxZiyuanVO vo) {
+		boolean result = false;
+		if (null == vo) {
+			return result;
+		}
+		String sql = "INSERT INTO friok_ziyuan(fxKW,fxName,"
+				+ " fxLink,shortLink,postTime,createTime,updateTime,type,status,star,sort,hot,visits,remark)"
+				+ " VALUES(?,?,?,?,?,now(),now(),?,1,0,1,1,0,?) ON DUPLICATE KEY UPDATE updateTime=now(),hot=hot+1";
+		List<Object> params = new ArrayList<Object>();
+		params.add(vo.getFxKW());
+		params.add(vo.getFxName());
+		params.add(vo.getFxLink());
+		params.add(vo.getShortLink());
+		params.add(vo.getPostTime());
+		params.add(vo.getType());
+		params.add(vo.getRemark());
+		
+		try {
+			result = DBOperate.update(Constants.ALIAS_MASTER, sql, params.toArray()) > 0;
+		} catch (Exception e) {
+			result = false;
+			logger.error("[friok资源]插入数据出错", e);
+		}
+		return result;
+	}
+	
+	/**
 	 * 获取最后一条的提交时间
 	 * @param args
 	 */

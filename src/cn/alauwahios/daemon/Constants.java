@@ -26,6 +26,9 @@ public class Constants {
 	//fw视频类别为100201
 	public static final int FW_VIDEO_TYPE = 100201;
 	
+	//friok视频类别为100301
+	public static final int FRIOK_VIDEO_TYPE = 100301;
+	
 	//状态，默认可用为1
 	public static final int DEFAULT_STATUS = 1;
 	
