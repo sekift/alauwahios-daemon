@@ -221,8 +221,19 @@ public class AlauwahiosDao {
 		Date postTime = (Date) DBOperate.query4ObjectQuietly(Constants.ALIAS_SLAVE, sql);
 		return postTime;
 	}
+	
+	/**
+	 * 获取btbtt最大id的那条，目的是为了拿爬取的最大pid
+	 * @param args
+	 */
+	public static String getBtbttMaxPid(){
+		String sql = "SELECT remark FROM fx_ziyuan WHERE type = 100401 ORDER BY id desc LIMIT 1;";
+		String pid = (String) DBOperate.query4ObjectQuietly(Constants.ALIAS_SLAVE, sql);
+		return pid;
+	}
 
 	public static void main(String args[]) {
+		System.out.println(getBtbttMaxPid());
 		System.out.println(getFxMaxPostTime());
 //		BaiduWangpanVO bwvo = new BaiduWangpanVO();
 //		bwvo.setPanShortLink("bo2acX5");

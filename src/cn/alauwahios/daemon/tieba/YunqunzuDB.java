@@ -34,7 +34,7 @@ public class YunqunzuDB {
 			    if(originUrl.startsWith("/")){
 			    	String url = HttpRequest.getLinkAfterRediect(YunqunzuUrl + originUrl);
 			    	// 写数据库
-			    	System.out.println(url);
+			    	//System.out.println(url);
 					BaiduYunVO byvo = new BaiduYunVO();
 					String panShortLink = UrlUtil.getUrlParamterValue(url, "short");
 					byvo.setPanShortLink(panShortLink);

@@ -6,7 +6,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import cn.alauwahios.daemon.site.Get57FXDB;
+import cn.alauwahios.daemon.site.GetBtbtt05;
 import cn.alauwahios.daemon.util.RandomUtil;
 
 /**
@@ -25,8 +25,9 @@ public class TiebaScheduler {
 	}
 	
 	public void fx() {
-		Get57FXDB fx = new Get57FXDB();
-		schedulerFx.scheduleAtFixedRate(fx, 0, RandomUtil.randomInt(8, 10), MINUTES);
+		//Get57FXDB fx = new Get57FXDB();
+		GetBtbtt05 fx = new GetBtbtt05();
+		schedulerFx.scheduleAtFixedRate(fx, 0, RandomUtil.randomInt(60, 60), MINUTES);
 	}
 	
 	public static void main(String[] args) {

@@ -28,6 +28,9 @@ public class Constants {
 	
 	//friok视频类别为100301
 	public static final int FRIOK_VIDEO_TYPE = 100301;
+
+	//btbtt视频类别为100401
+	public static final int BTBTT_VIDEO_TYPE = 100401;
 	
 	//状态，默认可用为1
 	public static final int DEFAULT_STATUS = 1;
