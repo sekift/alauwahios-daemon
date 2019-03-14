@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import cn.alauwahios.daemon.Constants;
 import cn.alauwahios.daemon.core.HttpRequest;
 import cn.alauwahios.daemon.dao.AlauwahiosDao;
+import cn.alauwahios.daemon.util.JsonUtil;
 import cn.alauwahios.daemon.util.JsoupUtil;
 import cn.alauwahios.daemon.util.SleepUtil;
 import cn.alauwahios.daemon.util.StringUtil;
@@ -22,7 +23,7 @@ public class GetBtbtt05 implements Runnable {
 	// 第一页 https://www.btbtt05.com/forum-index-fid-1.htm
 	// 详情 https://www.btbtt05.com/thread-index-fid-1-tid-18740.htm
 	// 起始页
-	private static final int startPage = 18729;
+	private static final int startPage = 19627;
 
 	public void run() {
 		getBtZiyuan();
@@ -60,8 +61,8 @@ public class GetBtbtt05 implements Runnable {
 				String urlTor = "";
 				for (Element e : eles) {
 					String href = e.attr("href");
-					if (!StringUtil.isNullOrBlank(href) && href.startsWith("https")) {
-						// System.out.println(href);
+					if (!StringUtil.isNullOrBlank(href) && href.startsWith("http")) {
+						//System.out.println(href);
 						href = href.replace("dialog", "download");
 						href = href.replace("-ajax-1", "");
 						urlTor = HttpRequest.getLinkAfterRediect(href);
@@ -83,6 +84,7 @@ public class GetBtbtt05 implements Runnable {
 				vo.setPostTime(new Date());
 				vo.setType(Constants.BTBTT_VIDEO_TYPE);
 				vo.setRemark(i + "");
+				//System.out.println(JsonUtil.toJson(vo));
 				AlauwahiosDao.saveFxZiyuan(vo);
 
 				SleepUtil.sleepBySecond(2, 4);
