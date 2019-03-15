@@ -23,7 +23,7 @@ public class GetBtbtt05 implements Runnable {
 	// 第一页 https://www.btbtt05.com/forum-index-fid-1.htm
 	// 详情 https://www.btbtt05.com/thread-index-fid-1-tid-18740.htm
 	// 起始页
-	private static final int startPage = 19627;
+	private static final int startPage = 19645;
 
 	public void run() {
 		getBtZiyuan();
@@ -43,7 +43,7 @@ public class GetBtbtt05 implements Runnable {
 	public void getBtZiyuan() {
 		int maxPid = getLastPage();
 		try {
-			for (int i = maxPid + 1; i < maxPid + 6; i++) {
+			for (int i = maxPid + 1; i < maxPid + 30; i++) {
 				String url = HOME_URL + "/thread-index-fid-1-tid-" + i + ".htm";
 				Document doc = JsoupUtil.getDocByConnect(url);
 				String title = doc.select("title").text();
