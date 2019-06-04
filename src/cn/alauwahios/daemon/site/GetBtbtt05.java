@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import cn.alauwahios.daemon.Constants;
 import cn.alauwahios.daemon.core.HttpRequest;
 import cn.alauwahios.daemon.dao.AlauwahiosDao;
-import cn.alauwahios.daemon.util.JsonUtil;
 import cn.alauwahios.daemon.util.JsoupUtil;
 import cn.alauwahios.daemon.util.SleepUtil;
 import cn.alauwahios.daemon.util.StringUtil;
