@@ -18,7 +18,7 @@ import cn.alauwahios.daemon.vo.FxZiyuanVO;
 
 public class GetBtbtt05 implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(GetBtbtt05.class);
-	private static final String HOME_URL = "http://www.btbtt05.com"; // btbtt05
+	private static final String HOME_URL = "http://www.btbtt06.com"; // btbtt05
 	// 第一页 https://www.btbtt05.com/forum-index-fid-1.htm
 	// 详情 https://www.btbtt05.com/thread-index-fid-1-tid-18740.htm
 	// 起始页

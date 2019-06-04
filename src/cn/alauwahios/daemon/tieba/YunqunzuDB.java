@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.alauwahios.daemon.core.HttpRequest;
 import cn.alauwahios.daemon.dao.AlauwahiosDao;
+import cn.alauwahios.daemon.util.JsonUtil;
 import cn.alauwahios.daemon.util.JsoupUtil;
 import cn.alauwahios.daemon.util.SleepUtil;
 import cn.alauwahios.daemon.util.UrlUtil;
@@ -22,7 +23,7 @@ import cn.alauwahios.daemon.vo.BaiduYunVO;
  */
 public class YunqunzuDB {
 	private static final Logger logger = LoggerFactory.getLogger(YunqunzuDB.class);
-	private static final String YunqunzuUrl = "http://www.yunqunzuquan.com/";//http://www.01yungroup.com
+	private static final String YunqunzuUrl = "http://www.yqz00.com/";//http://www.01yungroup.com
 
 	public static void getYunqunzu() {
 		Document doc = null;
@@ -42,6 +43,7 @@ public class YunqunzuDB {
 					byvo.setShortLink("");
 					byvo.setType(0);
 					byvo.setRemark("");
+					System.out.println(JsonUtil.toJson(byvo));
 					AlauwahiosDao.saveBaiduYun(byvo);
 			    	
 			    	SleepUtil.sleepBySecond(1, 5);
