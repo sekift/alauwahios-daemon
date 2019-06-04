@@ -231,37 +231,8 @@ public class AlauwahiosDao {
 		String pid = (String) DBOperate.query4ObjectQuietly(Constants.ALIAS_SLAVE, sql);
 		return pid;
 	}
-	
-	/**
-	 * kuwo歌手总数
-	 * @param prefix
-	 * @param total
-	 * @return
-	 */
-	public static boolean saveKuwoSingerTotal(String prefix, Object total, String remark) {
-		boolean result = false;
-		String sql = "INSERT INTO kuwo_singer_total(prefix,total,createTime,updateTime,remark)"
-				+ " VALUES(?,?,now(),now(),?) ON DUPLICATE KEY UPDATE updateTime=now(),total=?";
-		List<Object> params = new ArrayList<Object>();
-		params.add(prefix);
-		params.add(total);
-		params.add(remark);
-		
-		params.add(total);
-		
-		try {
-			result = DBOperate.update(Constants.ALIAS_MASTER, sql, params.toArray()) > 0;
-		} catch (Exception e) {
-			logger.error("[酷我信息]插入歌手总数出错", e);
-		}
-		return result;
-	}
 
 	public static void main(String args[]) {
-		System.out.println(saveKuwoSingerTotal("A", 100, ""));
-		
-		
-		
 //		BaiduWangpanVO bwvo = new BaiduWangpanVO();
 //		bwvo.setPanShortLink("bo2acX5");
 //		bwvo.setPanLink("https://pan.baidu.com/mbox/homepage?short=bo2acX5");
