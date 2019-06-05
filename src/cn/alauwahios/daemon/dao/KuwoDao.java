@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.alauwahios.daemon.Constants;
 import cn.alauwahios.daemon.dao.impl.DBOperate;
+import cn.alauwahios.daemon.vo.KuwoAlbumVO;
 import cn.alauwahios.daemon.vo.KuwoSingerBaseVO;
 import cn.alauwahios.daemon.vo.KuwoSingerInfoVO;
 import cn.alauwahios.daemon.vo.KuwoSingerNameVO;
@@ -62,7 +63,7 @@ public class KuwoDao {
 	 * @param args
 	 */
 	public static List<Object> getKuwoSingerId(){
-		String sql = "SELECT id FROM kuwo_singer_base";
+		String sql = "SELECT artistId FROM kuwo_singer_base";
 		List<Object> list = (List<Object>) DBOperate.queryQuietly(Constants.ALIAS_SLAVE, sql,
 				new ColumnListHandler());
 		return list;
@@ -78,12 +79,12 @@ public class KuwoDao {
 		if (null == vo) {
 			return result;
 		}
-		String sql = "INSERT INTO kuwo_singer_name(singerId,singerName,"
+		String sql = "INSERT INTO kuwo_singer_name(artistId,artistName,"
 				+ " prefix,curUrl,preUrl,createTime,updateTime,remark)"
 				+ " VALUES(?,?,?,?,?,now(),now(),?)";
 		List<Object> params = new ArrayList<Object>();
-		params.add(vo.getSingerId());
-		params.add(vo.getSingerName());
+		params.add(vo.getArtistId());
+		params.add(vo.getArtistName());
 		params.add(vo.getPrefix());
 		params.add(vo.getCurUrl());
 		params.add(vo.getPreUrl());
@@ -108,15 +109,15 @@ public class KuwoDao {
 		if (null == vo) {
 			return result;
 		}
-		String sql = "INSERT INTO kuwo_singer_base(id,aartist,"
-				+ " name,prefix,isStar,albumNum,mvNum,musicNum,artistFans,"
+		String sql = "INSERT INTO kuwo_singer_base(artistId,aartist,"
+				+ " artistName,prefix,isStar,albumNum,mvNum,musicNum,artistFans,"
 				+ " pic,pic70,pic120,pic300,curUrl,createTime,updateTime,remark)"
 				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),now(),?)"
 				+ "  ON DUPLICATE KEY UPDATE updateTime=now(),albumNum=?,mvNum=?,musicNum=?,artistFans=?";
 		List<Object> params = new ArrayList<Object>();
-		params.add(vo.getId());
+		params.add(vo.getArtistId());
 		params.add(vo.getAartist());
-		params.add(vo.getName());
+		params.add(vo.getArtistName());
 		params.add(vo.getPrefix());
 		params.add(vo.getIsStar());
 		params.add(vo.getAlbumNum());
@@ -154,16 +155,16 @@ public class KuwoDao {
 		if (null == vo) {
 			return result;
 		}
-		String sql = "INSERT INTO kuwo_singer_info(id,aartist,"
-				+ " name,isStar,albumNum,mvNum,musicNum,artistFans,"
+		String sql = "INSERT INTO kuwo_singer_info(artistId,aartist,"
+				+ " artistName,isStar,albumNum,mvNum,musicNum,artistFans,"
 				+ " pic,pic70,pic120,pic300,curUrl,createTime,updateTime,remark,"
 				+ " birthday,country,gener,weight,language,upPcUrl,birthplace,constellation,tall,info)"
 				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,now(),now(),?,?,?,?,?,?,?,?,?,?,?)"
-				+ "  ON DUPLICATE KEY UPDATE updateTime=now(),albumNum=?,mvNum=?,musicNum=?,artistFans=?,info=?";
+				+ " ON DUPLICATE KEY UPDATE updateTime=now(),albumNum=?,mvNum=?,musicNum=?,artistFans=?,info=?";
 		List<Object> params = new ArrayList<Object>();
-		params.add(vo.getId());
+		params.add(vo.getArtistId());
 		params.add(vo.getAartist());
-		params.add(vo.getName());
+		params.add(vo.getArtistName());
 		params.add(vo.getIsStar());
 		params.add(vo.getAlbumNum());
 		params.add(vo.getMvNum());
@@ -193,6 +194,43 @@ public class KuwoDao {
 		params.add(vo.getArtistFans());
 		params.add(vo.getInfo());
 		
+		try {
+			result = DBOperate.update(Constants.ALIAS_MASTER, sql, params.toArray()) > 0;
+		} catch (Exception e) {
+			result = false;
+			logger.error("[酷我信息]插入数据出错", e);
+		}
+		return result;
+	}
+	
+	/**
+	 *  kuwo专辑信息
+	 * @param vo
+	 * @return
+	 */
+	public static boolean saveKuwoAlbum(KuwoAlbumVO vo) {
+		boolean result = false;
+		if (null == vo) {
+			return result;
+		}
+		String sql = "INSERT INTO kuwo_album(albumId,albumName,artistId,"
+				+ " artistName,isStar,pay,pic,language,releaseDate,"
+				+ " albumInfo,curUrl,createTime,updateTime,remark)"
+				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,now(),now(),?)"
+				+ " ON DUPLICATE KEY UPDATE updateTime=now()";
+		List<Object> params = new ArrayList<Object>();
+		params.add(vo.getAlbumId());
+		params.add(vo.getAlbumName());
+		params.add(vo.getArtistId());
+		params.add(vo.getArtistName());
+		params.add(vo.getIsStar());
+		params.add(vo.getPay());
+		params.add(vo.getPic());
+		params.add(vo.getLanguage());
+		params.add(vo.getReleaseDate());
+		params.add(vo.getAlbumInfo());
+		params.add(vo.getCurUrl());
+		params.add(vo.getRemark());
 		try {
 			result = DBOperate.update(Constants.ALIAS_MASTER, sql, params.toArray()) > 0;
 		} catch (Exception e) {

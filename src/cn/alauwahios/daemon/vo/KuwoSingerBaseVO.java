@@ -4,9 +4,9 @@ import java.util.Date;
 
 public class KuwoSingerBaseVO {
 
-	private int id;// `id` int(11) NOT NULL,
+	private int artistId;// `id` int(11) NOT NULL,
+	private String artistName;// `name` varchar(100) DEFAULT NULL,
 	private String aartist;// `aartist` varchar(100) DEFAULT NULL,
-	private String name;// `name` varchar(100) DEFAULT NULL,
 	private String prefix;// `prefix` varchar(2) DEFAULT NULL COMMENT '歌手前缀',
 	private int isStar;// `isStar` tinyint(2) DEFAULT NULL,
 	private int albumNum;// `albumNum` int(11) DEFAULT NULL,
@@ -25,9 +25,9 @@ public class KuwoSingerBaseVO {
 	
 	@Override
 	public String toString() {
-		return "KuwoSingerBaseVO [id="+id
+		return "KuwoSingerBaseVO [artistId="+artistId
+				+",artistName="+artistName
 				+",aartist="+aartist
-				+",name="+name
 				+",prefix="+prefix
 				+",isStar="+isStar
 				+",albumNum="+albumNum
@@ -45,12 +45,20 @@ public class KuwoSingerBaseVO {
 				+"]";
 	}
 	
-	public int getId() {
-		return id;
+	public int getArtistId() {
+		return artistId;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public void setArtistId(int artistId) {
+		this.artistId = artistId;
+	}
+
+	public String getArtistName() {
+		return artistName;
+	}
+
+	public void setArtistName(String artistName) {
+		this.artistName = artistName;
 	}
 
 	public String getAartist() {
@@ -59,14 +67,6 @@ public class KuwoSingerBaseVO {
 
 	public void setAartist(String aartist) {
 		this.aartist = aartist;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getPrefix() {
