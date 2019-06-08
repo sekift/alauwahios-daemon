@@ -1,7 +1,5 @@
 package cn.alauwahios.daemon.site;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,12 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.alauwahios.daemon.dao.KuwoDao;
-import cn.alauwahios.daemon.util.HtmlUtil;
 import cn.alauwahios.daemon.util.JsonUtil;
 import cn.alauwahios.daemon.util.JsoupUtil;
 import cn.alauwahios.daemon.util.SleepUtil;
-import cn.alauwahios.daemon.util.StringUtil;
 import cn.alauwahios.daemon.vo.KuwoAlbumVO;
+import cn.alauwahios.daemon.vo.KuwoLyricVO;
+import cn.alauwahios.daemon.vo.KuwoMusicVO;
 import cn.alauwahios.daemon.vo.KuwoSingerBaseVO;
 import cn.alauwahios.daemon.vo.KuwoSingerInfoVO;
 import cn.alauwahios.daemon.vo.KuwoSingerNameVO;
@@ -43,6 +41,7 @@ public class GetKuwoDB {
 	/**
 	 * 1 歌手按字母分类总数
 	 */
+	@SuppressWarnings("unchecked")
 	public void getKuwoSingerTotal() {
 		String singerTotalUrl = KUWO_URL + "/api/www/artist/artistInfo?category=0";
 		try {
@@ -152,6 +151,7 @@ public class GetKuwoDB {
 	"reqId": "02d161c4-2066-4df0-925b-0128a5012654"
 }
 	 */
+	@SuppressWarnings("unchecked")
 	public void getKuwoSingerBase() {
 		String singerUrl = KUWO_URL + "/api/www/artist/artistInfo?category=0&rn=2000&pn=1&prefix=";
 		String singerComUrl = "";
@@ -213,6 +213,7 @@ public class GetKuwoDB {
 	 * http://www.kuwo.cn/api/www/artist/artist?artistid=1
 	 * 返回
 	 */
+	@SuppressWarnings("unchecked")
 	public void getKuwoSingerInfo(int id, int endId) {
 		String singerUrl = KUWO_URL + "/api/www/artist/artist?artistid=";
 		String singerComUrl = "";
@@ -356,35 +357,29 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 		String singerComUrl = "";
 		int curId = 0;
 		try {
-			List<Object> singerIdList = KuwoDao.getKuwoSingerId();
-			for (Object obj : singerIdList) {
-				curId = Integer.valueOf(obj.toString());
+			List<KuwoSingerInfoVO> singerIdList = KuwoDao.getKuwoSingerInfo(0, 23486);
+			for (KuwoSingerInfoVO infoVo : singerIdList) {
+				curId = infoVo.getArtistId();
 				if (curId < id) {
 					continue;
 				}
-				singerComUrl = singerUrl + obj + "&pn=1&rn=1";
+				singerComUrl = singerUrl + curId + "&pn=1&rn=1";
 				System.out.println(singerComUrl);
 				if (curId >= endId) {
 					break;
 				}
 
 				// 先获取总专辑数
-				Document doc = JsoupUtil.getDocByConnectIgnoreContent(singerComUrl);
-				String body = doc.getElementsByTag("body").text();
-				// 由于json可能出错，使用截取获取total
-				body = body.substring(0, body.indexOf("\",\"albumList\""));
-				body = body.substring(body.indexOf("\"total\":\"")+9);
-				int total = Integer.valueOf(body);
-				System.out.println(total);
+				int total = infoVo.getAlbumNum();
 
 				// 分页
 				int pageSize = 2;
 				int pageCount = total / pageSize + 1;
 				for (int page = 1; page <= pageCount; page++) {
-					singerComUrl = singerUrl + obj + "&pn=" + page + "&rn="+pageSize;
-					doc = JsoupUtil.getDocByConnectIgnoreContent(singerComUrl);
+					singerComUrl = singerUrl + curId + "&pn=" + page + "&rn="+pageSize;
+					Document doc = JsoupUtil.getDocByConnectIgnoreContent(singerComUrl);
 					System.out.println(singerComUrl);
-					body = doc.getElementsByTag("body").text();
+					String body = doc.getElementsByTag("body").text();
 					
 					body = body.substring(0, body.indexOf("}]},\"msg\""));
 					body = body.substring(body.indexOf("\"albumList\":[{")+14);
@@ -410,6 +405,7 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 						
 						System.out.println(albumInfo+" ============= "+arr);
 						arr = "{" + arr +"}";
+						@SuppressWarnings("unchecked")
 						Map<String, Object> map = JsonUtil.toBean(arr, Map.class);
 						KuwoAlbumVO vo = new KuwoAlbumVO();
 						vo.setAlbumId(Integer.valueOf(map.get("albumid").toString()));
@@ -453,7 +449,6 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 	
 	/**
 	 * 根据歌手获取歌曲信息
-	 * http://www.kuwo.cn/api/www/artist/artistMusic?artistid=1&pn=1&rn=2
 	 * {
 	"code": 200,
 	"curTime": 1559744683660,
@@ -507,119 +502,228 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 	"msg": "success",
 	"profileId": "site",
 	"reqId": "78f3e939-a605-4d8d-9efa-c19b653e61e0"
+	
+	http://www.kuwo.cn/api/www/artist/artistMusic?artistid=1&pn=1&rn=2
 }
 	 * 
 	 */
-	public void getKuwoMusic(int id, int endId) {
-		String singerUrl = KUWO_URL + "/api/www/artist/artist?artistid=";
+	@SuppressWarnings("unchecked")
+	public void getKuwoMusic(int singerBenId, int singerEndid,int pageNo, int pageSize) {//int id, int endId, 
+		String singerUrl = KUWO_URL + "/api/www/artist/artistMusic?artistid=";
 		String singerComUrl = "";
-		int curId= 0;
+		int curId = 0;
 		try {
-			List<Object> singerIdList = KuwoDao.getKuwoSingerId();
-			for (Object obj : singerIdList) { // 149657,183100 未爬
-				curId=Integer.valueOf(obj.toString());
-				if(curId<id){
-					continue;
-				}
-				singerComUrl = singerUrl + obj;
-				System.out.println(singerComUrl);
-				if(curId>=endId){
-					break;
-				}
-				
-				Document doc = JsoupUtil.getDocByConnectIgnoreContent(singerComUrl);
-				String body = doc.getElementsByTag("body").text();
-				System.out.println(body);
-				// 先提取info避免后面json出问题
-				String info = "";
-				if (body.contains("\"info\":\"")) {
-					int infoBegin = body.indexOf("\"info\":\"") + 8;
-					int infoEnd = body.indexOf("\"},\"msg\"");
-					info = body.substring(infoBegin, infoEnd);
-					if (info.length() > 15120) {
-						info = info.substring(0, 15000) + "...";
+			// 歌手总数大概是23485个,每次取200个
+			for (int beg = singerBenId; beg < 23485; beg += 100) {
+				List<KuwoSingerInfoVO> singerIdList = KuwoDao.getKuwoSingerInfo(beg, 100);
+				for (KuwoSingerInfoVO infoVo : singerIdList) {
+					curId = infoVo.getArtistId();
+//					if (curId < id) {
+//						continue;
+//					}
+					if (curId >= singerEndid) {
+						break;
 					}
+					int total = infoVo.getMusicNum();
+					System.out.println(total);
 
-					body = body.substring(0, infoBegin) + body.substring(infoEnd, body.length());
-				}
-				Map<String, Object> json = JsonUtil.toBean(body, Map.class);
-				Map<String, Object> map = (Map<String, Object>) json.get("data");
-//				System.out.println(map);
+					// 分页
+//					int pageSize = 200;
+					int pageCount = total / pageSize + 1;
+					for (int page = pageNo; page <= pageCount; page++) {
+						singerComUrl = singerUrl + curId + "&pn=" + page + "&rn=" + pageSize;
+						Document doc = JsoupUtil.getDocByConnectIgnoreContent(singerComUrl);
+						System.out.println(singerComUrl);
+						String body = doc.getElementsByTag("body").text();
+						Map<String, Object> json = JsonUtil.toBean(body, Map.class);
+						Map<String, Object> data = (Map<String, Object>) json.get("data");
+						List<Map<String, Object>> list = (List<Map<String, Object>>) data.get("list");
+						for (Map<String, Object> map : list) {
+//							System.out.println(map);
+							KuwoMusicVO vo = new KuwoMusicVO();
 
-				KuwoSingerInfoVO vo = new KuwoSingerInfoVO();
-				vo.setAartist(map.get("aartist").toString());
-				vo.setIsStar(Integer.valueOf(map.get("isStar").toString()));
-				vo.setAlbumNum(Integer.valueOf(map.get("albumNum").toString()));
-				vo.setMvNum(Integer.valueOf(map.get("mvNum").toString()));
-				vo.setMusicNum(Integer.valueOf(map.get("musicNum").toString()));
-				vo.setArtistFans(Integer.valueOf(map.get("artistFans").toString()));
-				if (null != map.get("pic")) {
-					vo.setPic(map.get("pic").toString());
-				}
-				if (null != map.get("pic70")) {
-					vo.setPic70(map.get("pic70").toString());
-				}
-				if (null != map.get("pic120")) {
-					vo.setPic120(map.get("pic120").toString());
-				}
-				if (null != map.get("pic300")) {
-					vo.setPic300(map.get("pic300").toString());
-				}
-				vo.setCurUrl(singerComUrl);
-				vo.setRemark("");
-				
-				if(null != map.get("birthday")){
-					vo.setBirthday(map.get("birthday").toString());
-				}
-				if(null != map.get("country")){
-					vo.setCountry(map.get("country").toString());
-				}
-				if(null != map.get("gener")){
-					vo.setGener(map.get("gener").toString());
-				}
-				if(null != map.get("weight")){
-					vo.setWeight(map.get("weight").toString());
-				}
-				if(null != map.get("language")){
-					vo.setLanguage(map.get("language").toString());
-				}
-				if(null != map.get("upPcUrl")){
-					vo.setUpPcUrl(map.get("upPcUrl").toString());
-				}
-				if(null != map.get("birthplace")){
-					vo.setBirthplace(map.get("birthplace").toString());
-				}
-				if(null != map.get("constellation")){
-					vo.setConstellation(map.get("constellation").toString());
-				}
-				if(null != map.get("tall")){
-					vo.setTall(map.get("tall").toString());
-				}
-				vo.setInfo(info);
+							int musicId = Integer.valueOf(map.get("rid").toString());
+							vo.setMusicId(Integer.valueOf(map.get("rid").toString()));
+							vo.setMusicName(map.get("name").toString());
+							vo.setMusicRid(map.get("musicrid").toString());
+							vo.setArtistId(Integer.valueOf(map.get("artistid").toString()));
+							vo.setArtistName(map.get("artist").toString());
+							vo.setIsStar(Integer.valueOf(map.get("isstar").toString()));
+							vo.setPay(Integer.valueOf(map.get("pay").toString()));
 
-				KuwoDao.saveKuwoSingerInfo(vo);
-				SleepUtil.sleepBySecond(110,110);
+							vo.setHasMv(Integer.valueOf(map.get("hasmv").toString()));
+							vo.setAlbumId(Integer.valueOf(map.get("albumid").toString()));
+							vo.setPay(Integer.valueOf(map.get("pay").toString()));
+							vo.setDuration(Integer.valueOf(map.get("duration").toString()));
+							vo.setOnline(Integer.valueOf(map.get("online").toString()));
+							vo.setTrack(Integer.valueOf(map.get("track").toString()));
+
+							if (null != map.get("album")) {
+								vo.setAlbumName(map.get("album").toString());
+							}
+							if (null != map.get("nationid")) {
+								vo.setNationId(map.get("nationid").toString());
+							}
+							if (null != map.get("albumpic")) {
+								vo.setAlbumPic(map.get("albumpic").toString());
+							}
+							if (null != map.get("songTimeMinutes")) {
+								vo.setSongTimeMinutes(map.get("songTimeMinutes").toString());
+							}
+							if (null != map.get("pic120")) {
+								vo.setPic120(map.get("pic120").toString());
+							}
+							if (null != map.get("isListenFee")) {
+								boolean flag = Boolean.valueOf(map.get("isListenFee").toString());
+								vo.setIsListenFee(flag ? 1 : 0);
+							}
+							if (null != map.get("hasLossless")) {
+								boolean flag = Boolean.valueOf(map.get("hasLossless").toString());
+								vo.setHasLossless(flag ? 1 : 0);
+							}
+							if (null != map.get("pic")) {
+								vo.setPic(map.get("pic").toString());
+							}
+							if (null != map.get("releaseDate")) {
+								vo.setReleaseDate(map.get("releaseDate").toString());
+							}
+
+							vo.setCurUrl(singerComUrl);
+							vo.setRemark("");
+
+//							System.out.println("VO= "+vo.toString());
+							KuwoDao.saveKuwoMusic(vo);
+							System.out.println("artistId="+vo.getArtistId()+";artistName="+vo.getArtistName()+";"+musicId);
+							getKuwoLyric(musicId);
+//							SleepUtil.sleepBySecond(100, 20);
+						}
+						singerComUrl = "";
+					}
+				}
 			}
 		} catch (Exception e) {
-			logger.error("[kuwo资源抓取出错了]，将重新抓取", e);
-			SleepUtil.sleepBySecond(10, 20);
-			getKuwoSingerInfo(curId, 183100);
+			logger.error("[kuwo资源抓取出错了]，将重新抓取; curUrl = " + singerComUrl, e);
+			System.out.println(e);
+			// SleepUtil.sleepBySecond(10, 20);
+			// getKuwoAlbum(curId, 2);
 		}
 	}
 	
 	/**
 	 * 根据歌曲id获取歌词
+	 * {
+	"data": {
+		"lrclist": [{
+			"time": "0.0",
+			"lineLyric": "너 땜에 (因为你) - 채연 (蔡妍)"
+		}, {
+			"time": "175.95999",
+			"lineLyric": "你看着我微笑 我还是会很担心"
+		}],
+		"songinfo": {
+			"album": "只有你",
+			"albumId": "20405",
+			"artist": "蔡妍[]",
+			"artistId": "1",
+			"coopFormats": ["320kmp3", "192kmp3", "128kmp3"],
+			"copyRight": "0",
+			"duration": "190",
+			"formats": "WMA96|WMA128|MP3128|MP3192|MP3H|AAC48",
+			"hasEcho": null,
+			"hasMv": "0",
+			"id": "120782",
+			"isExt": null,
+			"isNew": null,
+			"isPoint": "0",
+			"isbatch": null,
+			"isdownload": "0",
+			"isstar": "0",
+			"mkvNsig1": "0",
+			"mkvNsig2": "0",
+			"mkvRid": "MV_0",
+			"mp3Nsig1": "286317765",
+			"mp3Nsig2": "3759541851",
+			"mp3Rid": "MP3_120782",
+			"mp3Size": "",
+			"mp4sig1": "",
+			"mp4sig2": "",
+			"musicrId": "MUSIC_120782",
+			"mutiVer": "0",
+			"mvpic": null,
+			"nsig1": "2416845212",
+			"nsig2": "2513287007",
+			"online": "1",
+			"params": null,
+			"pay": "0",
+			"pic": "http://img1.kwcdn.kuwo.cn/star/albumcover/240/64/53/3764338614.jpg",
+			"playCnt": "277",
+			"rankChange": null,
+			"reason": null,
+			"score": null,
+			"score100": "41",
+			"songName": "因为你",
+			"songTimeMinutes": "03:10",
+			"tpay": null,
+			"trend": null,
+			"upTime": "",
+			"uploader": ""
+		}
+	},
+	"msg": "成功",
+	"msgs": null,
+	"profileid": "site",
+	"reqid": "c316d0a2X1d8bX4821Xab68X9fa8e2940b60",
+	"status": 200
+}
 	 * http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=6749207
 	 * 
 	 */
-	public void getKuwoLyric() {
-		String url = "http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId=6749207";
+	@SuppressWarnings("unchecked")
+	public void getKuwoLyric(int musicId) {
+		String url = "http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId="+musicId;
 		try {
 			Document doc = JsoupUtil.getDocByConnectIgnoreContent(url);
-			System.out.println(doc.getElementsByTag("body").text());
-			SleepUtil.sleepBySecond(1, 3);
+			String body = doc.getElementsByTag("body").text();
+			
+			// 先去掉无用的部分
+			body = body.substring(0, body.indexOf(",\"simpl\":"));
+			body = body + "}}";
+//			System.out.println(body);
+			Map<String, Object> json = JsonUtil.toBean(body, Map.class);
+			Map<String, Object> data = (Map<String, Object>) json.get("data");
+			// 歌词
+			String lrcList = ""; 
+			if(null == data.get("lrclist")){		
+			    return;
+			}else{
+				lrcList = data.get("lrclist").toString();
+			}
+			
+			Map<String, Object> map = (Map<String, Object>) data.get("songinfo");
+			// 其他
+			KuwoLyricVO vo = new KuwoLyricVO();
+			
+			vo.setLrcList(lrcList);
+			vo.setMusicId(Integer.valueOf(map.get("id").toString()));
+			vo.setMusicName(map.get("songName").toString());
+			vo.setArtistId(Integer.valueOf(map.get("artistId").toString()));
+			vo.setArtistName(map.get("artist").toString());
+			vo.setAlbumId(Integer.valueOf(map.get("albumId").toString()));
+			vo.setAlbumName(map.get("album").toString());
+			vo.setNsig1(map.get("nsig1").toString());
+			vo.setNsig2(map.get("nsig2").toString());
+			vo.setPlayCnt(Integer.valueOf(map.get("playCnt").toString()));
+			vo.setScore100(Integer.valueOf(map.get("score100").toString()));
+			vo.setCurUrl(url);
+			vo.setRemark("");
+//			System.out.println(vo);
+
+			boolean flag = KuwoDao.saveKuwLyric(vo);
+			System.out.println("artistId="+vo.getArtistId()+";artistName="+vo.getArtistName()+";"+vo.getMusicId()+ " : " +flag);
+//			SleepUtil.sleepBySecond(0, 1);
 		} catch (Exception e) {
-			logger.error("[kuwo资源抓取出错了]，将重新抓取", e);
+			logger.error("[kuwo资源抓取出错了]，将重新抓取,url="+url, e);
+			
 		}
 	}
 	
@@ -631,7 +735,7 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 	public void getGeciLyric() {
 		String url = "http://geci.me/song/";
 		try {
-			for(int i=416;i<1200;i++){
+			for(int i=1200;i<1700;i++){
 			Document doc = JsoupUtil.getDocByConnectIgnoreContent(url+i);
 			if(doc==null){
 				continue;
@@ -657,7 +761,8 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 	public static void main(String[] args) {
 		GetKuwoDB fx = new GetKuwoDB();
 //		fx.getKuwoSingerInfo(149657,183100);
-		fx.getKuwoAlbum(0, 2);
+		fx.getKuwoMusic(111, 112, 25 ,200);//歌手id起，歌手id尽，页数，页条数
 //		fx.getGeciLyric();
+//		fx.getKuwoLyric(5037080);
 	}
 }

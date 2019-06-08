@@ -3,6 +3,7 @@ package cn.alauwahios.daemon.dao;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import cn.alauwahios.daemon.Constants;
 import cn.alauwahios.daemon.dao.impl.DBOperate;
 import cn.alauwahios.daemon.vo.KuwoAlbumVO;
+import cn.alauwahios.daemon.vo.KuwoLyricVO;
+import cn.alauwahios.daemon.vo.KuwoMusicVO;
 import cn.alauwahios.daemon.vo.KuwoSingerBaseVO;
 import cn.alauwahios.daemon.vo.KuwoSingerInfoVO;
 import cn.alauwahios.daemon.vo.KuwoSingerNameVO;
@@ -62,6 +65,19 @@ public class KuwoDao {
 	 * 获取kuwo歌手Id
 	 * @param args
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static List<KuwoSingerInfoVO> getKuwoSingerInfo(int beginId, int endId){
+		String sql = "SELECT artistId,albumNum,musicNum FROM kuwo_singer_info ORDER BY artistId asc LIMIT ?,?";
+		List<KuwoSingerInfoVO> list = (List<KuwoSingerInfoVO>) DBOperate.queryQuietly(Constants.ALIAS_SLAVE, sql,
+				new BeanListHandler(KuwoSingerInfoVO.class), beginId, endId);
+		return list;
+	}
+	/**
+	 * 
+	 * 获取kuwo歌手Id和
+	 * @param args
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static List<Object> getKuwoSingerId(){
 		String sql = "SELECT artistId FROM kuwo_singer_base";
 		List<Object> list = (List<Object>) DBOperate.queryQuietly(Constants.ALIAS_SLAVE, sql,
@@ -204,6 +220,94 @@ public class KuwoDao {
 	}
 	
 	/**
+	 *  kuwo歌曲基本信息
+	 * @param vo
+	 * @return
+	 */
+	public static boolean saveKuwoMusic(KuwoMusicVO vo) {
+		boolean result = false;
+		if (null == vo) {
+			return result;
+		}
+		String sql = "INSERT INTO kuwo_music("
+				+ " musicId,musicRid,musicName,albumId,albumName,artistId,artistName,"
+				+ " hasMv,isStar,isListenFee,online,pay,nationId,track,albumPic,"
+				+ " pic,pic120,hasLossless,songTimeMinutes,releaseDate,duration,"
+				+ " curUrl,createTime,updateTime,remark)"
+				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),now(),?)"
+				+ "  ON DUPLICATE KEY UPDATE updateTime=now()";
+		List<Object> params = new ArrayList<Object>();
+		params.add(vo.getMusicId());
+		params.add(vo.getMusicRid());
+		params.add(vo.getMusicName());
+		params.add(vo.getAlbumId());
+		params.add(vo.getAlbumName());
+		params.add(vo.getArtistId());
+		params.add(vo.getArtistName());
+		params.add(vo.getHasMv());
+		params.add(vo.getIsStar());
+		params.add(vo.getIsListenFee());
+		params.add(vo.getOnline());
+		params.add(vo.getPay());
+		params.add(vo.getNationId());
+		params.add(vo.getTrack());
+		params.add(vo.getAlbumPic());
+		params.add(vo.getPic());
+		params.add(vo.getPic120());
+		params.add(vo.getHasLossless());
+		params.add(vo.getSongTimeMinutes());
+		params.add(vo.getReleaseDate());
+		params.add(vo.getDuration());
+		params.add(vo.getCurUrl());
+		params.add(vo.getRemark());
+		try {
+			result = DBOperate.update(Constants.ALIAS_MASTER, sql, params.toArray()) > 0;
+		} catch (Exception e) {
+			result = false;
+			logger.error("[酷我信息]插入数据出错", e);
+		}
+		return result;
+	}
+	
+	/**
+	 *  kuwo歌曲基本信息
+	 * @param vo
+	 * @return
+	 */
+	public static boolean saveKuwLyric(KuwoLyricVO vo) {
+		boolean result = false;
+		if (null == vo) {
+			return result;
+		}
+		String sql = "INSERT INTO kuwo_lyric("
+				+ " musicId,musicName,albumId,albumName,artistId,artistName,"
+				+ " lrcList,nsig1,nsig2,score100,playCnt,"
+				+ " curUrl,createTime,updateTime,remark)"
+				+ " VALUES(?,?,?,?,?,?,?,?,?,?,?,?,now(),now(),?)"
+				+ "  ON DUPLICATE KEY UPDATE updateTime=now()";
+		List<Object> params = new ArrayList<Object>();
+		params.add(vo.getMusicId());
+		params.add(vo.getMusicName());
+		params.add(vo.getAlbumId());
+		params.add(vo.getAlbumName());
+		params.add(vo.getArtistId());
+		params.add(vo.getArtistName());
+		params.add(vo.getLrcList());
+		params.add(vo.getNsig1());
+		params.add(vo.getNsig2());
+		params.add(vo.getScore100());
+		params.add(vo.getPlayCnt());
+		params.add(vo.getCurUrl());
+		params.add(vo.getRemark());
+		try {
+			result = DBOperate.update(Constants.ALIAS_MASTER, sql, params.toArray()) > 0;
+		} catch (Exception e) {
+			logger.error("[酷我信息]插入数据出错", e);
+		}
+		return result;
+	}
+	
+	/**
 	 *  kuwo专辑信息
 	 * @param vo
 	 * @return
@@ -242,7 +346,7 @@ public class KuwoDao {
 
 	public static void main(String args[]) {
 //		System.out.println(saveKuwoSingerTotal("A", 100, ""));
-		System.out.println(getKuwoSingerId());
+		System.out.println(getKuwoSingerInfo(0,10));
 		
 	}
 }
