@@ -23,19 +23,21 @@ import cn.alauwahios.daemon.vo.BaiduYunVO;
  */
 public class YunqunzuDB {
 	private static final Logger logger = LoggerFactory.getLogger(YunqunzuDB.class);
-	private static final String YunqunzuUrl = "http://www.yqzquan.com/";//http://www.01yungroup.com
+	private static final String YunqunzuUrl = "http://yunqunzuduo.com/";//http://www.01yungroup.com
 
 	public static void getYunqunzu() {
 		Document doc = null;
 		try {
 			doc = JsoupUtil.getDocByConnect(YunqunzuUrl);
 			Elements eles = doc.getElementsByClass("group-name");
-//			System.out.println(eles);
+			System.out.println(eles);
 			for(Element ele : eles){
-				String originUrl = ele.select("a").attr("href");
-//				System.out.println("originUrl="+originUrl);
-			    if(originUrl.startsWith("http")){
-			    	String url = HttpRequest.getLinkAfterRediect(originUrl);//YunqunzuUrl + 
+				String originUrl = ele.select("a").attr("onclick");
+				originUrl = originUrl.replace("ondj_(", "");
+				originUrl = originUrl.split(",")[0].replaceAll("\'","");
+				System.out.println("originUrl="+originUrl);
+			    if(originUrl.startsWith("/")){
+			    	String url = HttpRequest.getLinkAfterRediect(YunqunzuUrl+originUrl);//YunqunzuUrl + 
 			    	// 写数据库
 //			    	System.out.println(url);
 					BaiduYunVO byvo = new BaiduYunVO();
