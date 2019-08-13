@@ -3,6 +3,7 @@ package cn.alauwahios.daemon.dao;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.slf4j.Logger;
@@ -62,12 +63,22 @@ public class KuwoDao {
 	}
 	
 	/**
+	 * 获取kuwo的第几个歌手
+	 * @param args
+	 */
+	public static int getKuwoSingerNum(int artistId){
+		String sql = "select count(*) from kuwo_singer_info where artistId<?;";
+		Long total = (Long) DBOperate.query4ObjectQuietly(Constants.ALIAS_SLAVE, sql, artistId);
+		return total.intValue();
+	}
+	
+	/**
 	 * 获取kuwo歌手Id
 	 * @param args
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static List<KuwoSingerInfoVO> getKuwoSingerInfo(int beginId, int endId){
-		String sql = "SELECT artistId,albumNum,musicNum FROM kuwo_singer_info ORDER BY artistId asc LIMIT ?,?";
+		String sql = "SELECT artistId,artistName,albumNum,musicNum FROM kuwo_singer_info ORDER BY artistId asc LIMIT ?,?";
 		List<KuwoSingerInfoVO> list = (List<KuwoSingerInfoVO>) DBOperate.queryQuietly(Constants.ALIAS_SLAVE, sql,
 				new BeanListHandler(KuwoSingerInfoVO.class), beginId, endId);
 		return list;
@@ -269,17 +280,35 @@ public class KuwoDao {
 		return result;
 	}
 	
+	// 歌词数据库名称
+	public static final String KUWO_LYRIC_NAME = "kuwo_lyric_2";
+	
+	
+	/**
+	 * 获取kuwo歌词是否已经下载
+	 * @param args
+	 */
+	public static boolean getKuwoLyricExists(int musicId){
+		String sql = "SELECT * FROM "+KUWO_LYRIC_NAME+" WHERE musicId=?";
+		KuwoLyricVO vo = (KuwoLyricVO) DBOperate.queryQuietly(Constants.ALIAS_SLAVE, sql,new BeanHandler(KuwoLyricVO.class), musicId);
+		boolean flag = false;
+		if(null!=vo){
+			flag = true;
+		}
+		return flag;
+	}
+	
 	/**
 	 *  kuwo歌曲基本信息
 	 * @param vo
 	 * @return
 	 */
-	public static boolean saveKuwLyric(KuwoLyricVO vo) {
+	public static boolean saveKuwoLyric(KuwoLyricVO vo) {
 		boolean result = false;
 		if (null == vo) {
 			return result;
 		}
-		String sql = "INSERT INTO kuwo_lyric("
+		String sql = "INSERT INTO "+KUWO_LYRIC_NAME+"("
 				+ " musicId,musicName,albumId,albumName,artistId,artistName,"
 				+ " lrcList,nsig1,nsig2,score100,playCnt,"
 				+ " curUrl,createTime,updateTime,remark)"
@@ -346,7 +375,7 @@ public class KuwoDao {
 
 	public static void main(String args[]) {
 //		System.out.println(saveKuwoSingerTotal("A", 100, ""));
-		System.out.println(getKuwoSingerInfo(0,10));
+		System.out.println(getKuwoLyricExists(54316));
 		
 	}
 }

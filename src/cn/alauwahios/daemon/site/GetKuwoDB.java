@@ -314,140 +314,6 @@ public class GetKuwoDB {
 	}
 	
 	/**
-	 * 根据歌手获取专辑信息
-	 * 
-	 * {
-	"code": 200,
-	"curTime": 1559744736501,
-	"data": {
-		"total": "16",
-		"albumList": [{
-			"albuminfo": "我也应该是被疼爱的灰姑娘&lt;br&gt;可你不愿用一生陪我赌一个过往&lt;br&gt;也会有一个人与我互诉衷肠&lt;br&gt;丢掉过往的伤&lt;br&gt;也会有一个人与我互诉衷肠&lt;br&gt;会有吗...",
-			"artist": "陈雪凝",
-			"releaseDate": "2019-05-09",
-			"album": "灰姑娘",
-			"albumid": 9909242,
-			"pay": 0,
-			"artistid": 1486611,
-			"pic": "http://img1.kwcdn.kuwo.cn/star/albumcover/300/17/43/1340289947.jpg",
-			"isstar": 0,
-			"lang": "国语"
-		}, {
-			"albuminfo": "陈雪凝二专第五支单曲《你的酒馆对我打了烊》&lt;br&gt;词曲：陈雪凝&lt;br&gt;和声：李美灵芝&lt;br&gt;混音：鍾澤鑫&lt;br&gt;希望能在夜晚触碰到你最真实的情感",
-			"artist": "陈雪凝",
-			"releaseDate": "2019-02-19",
-			"album": "你的酒馆对我打了烊",
-			"albumid": 9041133,
-			"pay": 0,
-			"artistid": 1486611,
-			"pic": "http://img1.kwcdn.kuwo.cn/star/albumcover/300/57/5/2300106887.jpg",
-			"isstar": 0,
-			"lang": "国语"
-		}]
-	},
-	"msg": "success",
-	"profileId": "site",
-	"reqId": "7eb245de-ecbe-4a0d-899a-8daac6d2c45d"
-}
-
-http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
-	 */
-	public void getKuwoAlbum(int id, int endId) {
-		String singerUrl = KUWO_URL + "/api/www/artist/artistAlbum?artistid=";
-		String singerComUrl = "";
-		int curId = 0;
-		try {
-			List<KuwoSingerInfoVO> singerIdList = KuwoDao.getKuwoSingerInfo(0, 23486);
-			for (KuwoSingerInfoVO infoVo : singerIdList) {
-				curId = infoVo.getArtistId();
-				if (curId < id) {
-					continue;
-				}
-				singerComUrl = singerUrl + curId + "&pn=1&rn=1";
-				System.out.println(singerComUrl);
-				if (curId >= endId) {
-					break;
-				}
-
-				// 先获取总专辑数
-				int total = infoVo.getAlbumNum();
-
-				// 分页
-				int pageSize = 2;
-				int pageCount = total / pageSize + 1;
-				for (int page = 1; page <= pageCount; page++) {
-					singerComUrl = singerUrl + curId + "&pn=" + page + "&rn="+pageSize;
-					Document doc = JsoupUtil.getDocByConnectIgnoreContent(singerComUrl);
-					System.out.println(singerComUrl);
-					String body = doc.getElementsByTag("body").text();
-					
-					body = body.substring(0, body.indexOf("}]},\"msg\""));
-					body = body.substring(body.indexOf("\"albumList\":[{")+14);
-					body = body.replace("},", "====");
-					body = body.replace("===={", "====");
-					System.out.println(body);
-					String[] bodyArray = body.split("====");
-					for (String arr : bodyArray) {
-						System.out.println(arr);
-						
-						// 处理albuminfo
-						String albumInfo = "";
-						if (arr.contains("\"albuminfo\":\"")) {
-							int infoBegin = arr.indexOf("\"albuminfo\":\"") + 13;
-							int infoEnd = arr.indexOf("\",\"artist\"");
-							albumInfo = arr.substring(infoBegin, infoEnd);
-							if (albumInfo.length() > 15120) {
-								albumInfo = albumInfo.substring(0, 15000) + "...";
-							}
-
-							arr = arr.substring(0, infoBegin) + arr.substring(infoEnd, arr.length());
-						}
-						
-						System.out.println(albumInfo+" ============= "+arr);
-						arr = "{" + arr +"}";
-						@SuppressWarnings("unchecked")
-						Map<String, Object> map = JsonUtil.toBean(arr, Map.class);
-						KuwoAlbumVO vo = new KuwoAlbumVO();
-						vo.setAlbumId(Integer.valueOf(map.get("albumid").toString()));
-						vo.setAlbumName(map.get("album").toString());
-						int artistId = Integer.valueOf(map.get("artistid").toString());
-						if(artistId!=curId){//排除不是本歌手的专辑
-							continue;
-						}
-						
-						vo.setArtistId(artistId);
-						vo.setArtistName(map.get("artist").toString());
-						vo.setIsStar(Integer.valueOf(map.get("isstar").toString()));
-						vo.setPay(Integer.valueOf(map.get("pay").toString()));
-						if (null != map.get("pic")) {
-							vo.setPic(map.get("pic").toString());
-						}
-						if (null != map.get("releaseDate")) {
-							vo.setReleaseDate(map.get("releaseDate").toString());
-						}
-						if (null != map.get("lang")) {
-							vo.setLanguage(map.get("lang").toString());
-						}
-						
-						vo.setAlbumInfo(albumInfo);
-						vo.setCurUrl(singerComUrl);
-						vo.setRemark("");
-
-						KuwoDao.saveKuwoAlbum(vo);
-						SleepUtil.sleepBySecond(10, 20);
-					}
-					singerComUrl = "";
-				}
-			}
-		} catch (Exception e) {
-			logger.error("[kuwo资源抓取出错了]，将重新抓取", e);
-			System.out.println(e);
-			SleepUtil.sleepBySecond(10, 20);
-			getKuwoAlbum(curId, 2);
-		}
-	}
-	
-	/**
 	 * 根据歌手获取歌曲信息
 	 * {
 	"code": 200,
@@ -512,6 +378,9 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 		String singerUrl = KUWO_URL + "/api/www/artist/artistMusic?artistid=";
 		String singerComUrl = "";
 		int curId = 0;
+		
+		// 先去数据库查询是第几个
+		singerBenId = KuwoDao.getKuwoSingerNum(singerBenId);
 		try {
 			// 歌手总数大概是23485个,每次取200个
 			for (int beg = singerBenId; beg < 23485; beg += 100) {
@@ -593,13 +462,20 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 
 //							System.out.println("VO= "+vo.toString());
 							KuwoDao.saveKuwoMusic(vo);
-							System.out.println("artistId="+vo.getArtistId()+";artistName="+vo.getArtistName()+";"+musicId);
-							getKuwoLyric(musicId);
+							System.out.println("artistId="+vo.getArtistId()+";"+musicId);//+";artistName="+vo.getArtistName()
+							
+							// 先查这首歌是否已经有歌词，没有才去下
+							if(!KuwoDao.getKuwoLyricExists(musicId)){
+							    getKuwoLyric(musicId);
+							}else{
+								System.out.println("artistId="+vo.getArtistId()+";"+musicId+"; 歌词已下载");//+";artistName="+vo.getArtistName()
+							}
 //							SleepUtil.sleepBySecond(100, 20);
 						}
 						singerComUrl = "";
 					}
 				}
+				SleepUtil.sleepBySecond(2, 4);
 			}
 		} catch (Exception e) {
 			logger.error("[kuwo资源抓取出错了]，将重新抓取; curUrl = " + singerComUrl, e);
@@ -682,6 +558,7 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 	public void getKuwoLyric(int musicId) {
 		String url = "http://m.kuwo.cn/newh5/singles/songinfoandlrc?musicId="+musicId;
 		try {
+			
 			Document doc = JsoupUtil.getDocByConnectIgnoreContent(url);
 			String body = doc.getElementsByTag("body").text();
 			
@@ -712,15 +589,23 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 			vo.setAlbumName(map.get("album").toString());
 			vo.setNsig1(map.get("nsig1").toString());
 			vo.setNsig2(map.get("nsig2").toString());
-			vo.setPlayCnt(Integer.valueOf(map.get("playCnt").toString()));
-			vo.setScore100(Integer.valueOf(map.get("score100").toString()));
+			int playCnt = 0, score100 = 0;
+			try{
+				playCnt = Integer.valueOf(map.get("playCnt").toString());
+			}catch(Exception e){}			
+			vo.setPlayCnt(playCnt);
+			
+			try{
+				score100 = Integer.valueOf(map.get("score100").toString());
+			}catch(Exception e){}			
+			vo.setScore100(score100);
 			vo.setCurUrl(url);
 			vo.setRemark("");
 //			System.out.println(vo);
 
-			boolean flag = KuwoDao.saveKuwLyric(vo);
-			System.out.println("artistId="+vo.getArtistId()+";artistName="+vo.getArtistName()+";"+vo.getMusicId()+ " : " +flag);
-//			SleepUtil.sleepBySecond(0, 1);
+			boolean flag = KuwoDao.saveKuwoLyric(vo);
+			System.out.println("artistId="+vo.getArtistId()+";"+vo.getMusicId()+  " : " +flag);//+";artistName="+vo.getArtistName()
+			SleepUtil.sleepBySecond(0, 1);
 		} catch (Exception e) {
 			logger.error("[kuwo资源抓取出错了]，将重新抓取,url="+url, e);
 			
@@ -728,41 +613,158 @@ http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 	}
 	
 	/**
-	 * geci网的http://geci.me/song/1581878
+	 * 根据歌手获取专辑信息
 	 * 
-	 * @param args
+	 * {
+	"code": 200,
+	"curTime": 1559744736501,
+	"data": {
+		"total": "16",
+		"albumList": [{
+			"albuminfo": "我也应该是被疼爱的灰姑娘&lt;br&gt;可你不愿用一生陪我赌一个过往&lt;br&gt;也会有一个人与我互诉衷肠&lt;br&gt;丢掉过往的伤&lt;br&gt;也会有一个人与我互诉衷肠&lt;br&gt;会有吗...",
+			"artist": "陈雪凝",
+			"releaseDate": "2019-05-09",
+			"album": "灰姑娘",
+			"albumid": 9909242,
+			"pay": 0,
+			"artistid": 1486611,
+			"pic": "http://img1.kwcdn.kuwo.cn/star/albumcover/300/17/43/1340289947.jpg",
+			"isstar": 0,
+			"lang": "国语"
+		}, {
+			"albuminfo": "陈雪凝二专第五支单曲《你的酒馆对我打了烊》&lt;br&gt;词曲：陈雪凝&lt;br&gt;和声：李美灵芝&lt;br&gt;混音：鍾澤鑫&lt;br&gt;希望能在夜晚触碰到你最真实的情感",
+			"artist": "陈雪凝",
+			"releaseDate": "2019-02-19",
+			"album": "你的酒馆对我打了烊",
+			"albumid": 9041133,
+			"pay": 0,
+			"artistid": 1486611,
+			"pic": "http://img1.kwcdn.kuwo.cn/star/albumcover/300/57/5/2300106887.jpg",
+			"isstar": 0,
+			"lang": "国语"
+		}]
+	},
+	"msg": "success",
+	"profileId": "site",
+	"reqId": "7eb245de-ecbe-4a0d-899a-8daac6d2c45d"
+}
+
+http://www.kuwo.cn/api/www/artist/artistAlbum?artistid=1486611&pn=1&rn=28
 	 */
-	public void getGeciLyric() {
-		String url = "http://geci.me/song/";
+	public void getKuwoAlbum(int singerBenId, int endId, int currPage, int pageSize) {
+		String singerUrl = KUWO_URL + "/api/www/artist/artistAlbum?artistid=";
+		String singerComUrl = "";
+		int curId = 0;
 		try {
-			for(int i=1200;i<1700;i++){
-			Document doc = JsoupUtil.getDocByConnectIgnoreContent(url+i);
-			if(doc==null){
-				continue;
-			}
-			System.out.println(url);
-			
-			System.out.println("歌曲名:"+doc.getElementsByTag("td").get(2));
-			System.out.println("艺术家:"+doc.getElementsByTag("td").get(5));
-			System.out.println("专辑:"+doc.getElementsByTag("td").get(7));
-			System.out.println("语种:"+doc.getElementsByTag("td").get(9));
-			System.out.println("发行时间:"+doc.getElementsByTag("td").get(11));
-			System.out.println("唱片公司:"+doc.getElementsByTag("td").get(13));
-			
-			System.out.println("歌词:"+doc.getElementsByTag("p"));
-			SleepUtil.sleepBySecond(111, 311);
+			singerBenId = KuwoDao.getKuwoSingerNum(singerBenId);
+			List<KuwoSingerInfoVO> singerIdList = KuwoDao.getKuwoSingerInfo(singerBenId, endId);
+			for (KuwoSingerInfoVO infoVo : singerIdList) {
+				curId = infoVo.getArtistId();
+				
+				singerComUrl = singerUrl + curId + "&pn=1&rn=1";
+				//System.out.println(singerComUrl);
+
+				// 先获取总专辑数
+				int total = infoVo.getAlbumNum();
+				System.out.println(curId +";"+infoVo.getArtistName()+ " 的专辑总数为： " + total);
+
+				// 分页
+				int pageCount = total / pageSize + 1;
+				for (int page = currPage; page <= pageCount; page++) {
+					singerComUrl = singerUrl + curId + "&pn=" + page + "&rn="+pageSize;
+					SleepUtil.sleepBySecond(1, 3);
+					Document doc = JsoupUtil.getDocByConnectIgnoreContent(singerComUrl);
+					System.out.println(singerComUrl);
+					String body = doc.getElementsByTag("body").text();
+					
+					if(body.contains("\"total\":\"0\"")){
+						continue;
+					}
+//					System.out.println(body);
+					body = body.substring(0, body.indexOf("}]},\"msg\""));
+					body = body.substring(body.indexOf("\"albumList\":[{")+14);
+					body = body.replace("},", ">=>>=>");
+					body = body.replace(">=>>=>{", ">=>>=>");
+					String[] bodyArray = body.split(">=>>=>");
+					for (String arr : bodyArray) {
+						
+						// 处理albuminfo
+						String albumInfo = "";
+						if (arr.contains("\"albuminfo\":\"")) {
+							int infoBegin = arr.indexOf("\"albuminfo\":\"") + 13;
+							int infoEnd = arr.indexOf("\",\"artist\"");
+//							System.out.println(arr);
+							albumInfo = arr.substring(infoBegin, infoEnd);
+							if (albumInfo.length() >= 15120) {
+								albumInfo = albumInfo.substring(0, 15000) + "...";
+							}
+
+							arr = arr.substring(0, infoBegin) + arr.substring(infoEnd, arr.length());
+						}
+						
+//						System.out.println(albumInfo+" ============= "+arr);
+						arr = "{" + arr +"}";
+						@SuppressWarnings("unchecked")
+						Map<String, Object> map = null;
+						try{
+						    map = JsonUtil.toBean(arr, Map.class);
+						}catch(Exception e){
+							logger.error("[kuwo资源抓取出错了]:" + arr, e);
+							continue;
+						}
+						KuwoAlbumVO vo = new KuwoAlbumVO();
+						vo.setAlbumId(Integer.valueOf(map.get("albumid").toString()));
+						vo.setAlbumName(map.get("album").toString());
+						int artistId = Integer.valueOf(map.get("artistid").toString());
+//						if(artistId!=curId){//排除不是本歌手的专辑
+//							continue;
+//						}
+						
+						vo.setArtistId(artistId);
+						vo.setArtistName(map.get("artist").toString());
+						vo.setIsStar(Integer.valueOf(map.get("isstar").toString()));
+						vo.setPay(Integer.valueOf(map.get("pay").toString()));
+						if (null != map.get("pic")) {
+							vo.setPic(map.get("pic").toString());
+						}
+						if (null != map.get("releaseDate")) {
+							vo.setReleaseDate(map.get("releaseDate").toString());
+						}
+						if (null != map.get("lang")) {
+							vo.setLanguage(map.get("lang").toString());
+						}
+						
+						vo.setAlbumInfo(albumInfo);
+						vo.setCurUrl(singerComUrl);
+						vo.setRemark("");
+
+						boolean flag = KuwoDao.saveKuwoAlbum(vo);
+						System.out.println("albumId=" + vo.getAlbumId()+";albumName="+ vo.getAlbumName() + "; "+flag);
+					}
+					singerComUrl = "";
+				}
 			}
 		} catch (Exception e) {
 			logger.error("[kuwo资源抓取出错了]，将重新抓取", e);
+			e.printStackTrace();
+//			SleepUtil.sleepBySecond(10, 20);
+//			getKuwoAlbum(curId, 2, pageSize);
 		}
 	}
-	
 
 	public static void main(String[] args) {
 		GetKuwoDB fx = new GetKuwoDB();
-//		fx.getKuwoSingerInfo(149657,183100);
-		fx.getKuwoMusic(111, 112, 25 ,200);//歌手id起，歌手id尽，页数，页条数
+//		fx.getKuwoSingerInfo(149657,183106);
+		
+		/**
+		 * 0 1 - 9113
+		 * 1 9114 - 86206
+		 * 2 86206 - 3773716
+		 */
+		//fx.getKuwoMusic(193474, 3773716, 1, 100);//歌手id起(排序)，歌手id尽（不是排序23486），页数，208586 1
 //		fx.getGeciLyric();
 //		fx.getKuwoLyric(5037080);
+		
+		fx.getKuwoAlbum(30859, 23486, 1, 100);//23486
 	}
 }

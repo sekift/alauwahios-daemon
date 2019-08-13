@@ -18,11 +18,12 @@ import cn.alauwahios.daemon.vo.FxZiyuanVO;
 
 public class GetBtbtt05 implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(GetBtbtt05.class);
-	private static final String HOME_URL = "http://www.btbtt06.com"; // btbtt05
+	private static final String HOME_URL = "http://www.3btbtt.com"; // btbtt05
 	// 第一页 https://www.btbtt05.com/forum-index-fid-1.htm
+	// 3btbtt
 	// 详情 https://www.btbtt05.com/thread-index-fid-1-tid-18740.htm
 	// 起始页
-	private static final int startPage = 19645;
+	private static final int startPage = 22789;
 
 	public void run() {
 		getBtZiyuan();
@@ -42,8 +43,9 @@ public class GetBtbtt05 implements Runnable {
 	public void getBtZiyuan() {
 		int maxPid = getLastPage();
 		try {
-			for (int i = maxPid + 1; i < maxPid + 30; i++) {
+			for (int i = maxPid + 1; i < maxPid + 130; i++) {
 				String url = HOME_URL + "/thread-index-fid-1-tid-" + i + ".htm";
+				System.out.println(url);
 				Document doc = JsoupUtil.getDocByConnect(url);
 				String title = doc.select("title").text();
 				// 将过滤某些字样
