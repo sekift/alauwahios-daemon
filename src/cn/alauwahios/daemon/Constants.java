@@ -20,6 +20,12 @@ public class Constants {
 	// 从库
 	public static final String ALIAS_SLAVE = "alauwahios_slave";
 	
+	// 主库
+	public static final String QUELILI_MASTER = "quelili_master";
+	
+	// 从库
+	public static final String QUELILI_SLAVE = "quelili_slave";
+	
 	// 类别默认为0
 	public static final int DEFAULT_TYPE = 0;
 	
