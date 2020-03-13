@@ -18,12 +18,12 @@ import cn.alauwahios.daemon.vo.FxZiyuanVO;
 
 public class GetBtbtt05 implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(GetBtbtt05.class);
-	private static final String HOME_URL = "http://www.3btbtt.com"; // btbtt05
+	private static final String HOME_URL = "http://www.2btjia.com"; // btbtt05
 	// 第一页 https://www.btbtt05.com/forum-index-fid-1.htm
 	// 3btbtt
 	// 详情 https://www.btbtt05.com/thread-index-fid-1-tid-18740.htm
 	// 起始页
-	private static final int startPage = 22789;
+	private static final int startPage = 32454;
 
 	public void run() {
 		getBtZiyuan();
