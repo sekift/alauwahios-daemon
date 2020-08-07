@@ -2,7 +2,10 @@ package cn.alauwahios.daemon.util;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -37,7 +40,18 @@ public class JsoupUtil {
 	public static Document getDocByConnect(String url) {
 		Document doc = null;
 		try {
-			doc = Jsoup.connect(url).timeout(connectTime).get();
+			//doc = Jsoup.connect(url).timeout(connectTime).get();
+			long updateTime = System.currentTimeMillis();
+			Connection connect = Jsoup.connect(url);
+	        connect.header("Host", "www.3btjia.com");
+	        connect.header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:78.0) Gecko/20100101 Firefox/78.0");
+	        connect.header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+	        connect.header("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2");
+	        connect.header("Accept-Encoding", "gzip, deflate");
+	        connect.header("Cache-Control", "max-age=0");
+	        connect.header("Connection", "keep-alive");
+	        connect.header("Cookie", "bbs_sid=5f0818974500e70a; bbs_page=1; cck_lasttime=1596724324170; cck_count=2; bbs_lastonlineupdate="+updateTime+"; bbs_lastday=1596613765; timeoffset=%2B08");
+	        doc = connect.get();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

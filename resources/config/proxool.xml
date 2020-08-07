@@ -3,12 +3,12 @@
 	<proxool>
 		<alias>alauwahios_master</alias>
 		<driver-url>
-		    jdbc:mysql://127.0.0.1:3306/alauwahios?useUnicode=true&amp;characterEncoding=utf-8
+		    jdbc:mysql://120.78.214.73:3306/alauwahios?useUnicode=true&amp;characterEncoding=utf-8
 		</driver-url>
 		<driver-class>org.gjt.mm.mysql.Driver</driver-class>
     <driver-properties>
-        <property name="user" value="root"/>
-        <property name="password" value="123456"/>
+        <property name="user" value="luyz"/>
+        <property name="password" value="luyz123456-="/>
         <property name="connectTimeout" value="1000"/>
     </driver-properties>
     <house-keeping-sleep-time>30000</house-keeping-sleep-time>
@@ -27,12 +27,12 @@
   <proxool>
 		<alias>alauwahios_slave</alias>
 		<driver-url>
-			jdbc:mysql://127.0.0.1:3306/alauwahios?useUnicode=true&amp;characterEncoding=utf-8
+			jdbc:mysql://120.78.214.73:3306/alauwahios?useUnicode=true&amp;characterEncoding=utf-8
 		</driver-url>
 		<driver-class>org.gjt.mm.mysql.Driver</driver-class>
 		<driver-properties>
-			<property name="user" value="root" />
-			<property name="password" value="123456" />
+			<property name="user" value="luyz" />
+			<property name="password" value="luyz123456-=" />
 			<property name="connectTimeout" value="1000"/>
 		</driver-properties>
 		<house-keeping-sleep-time>30000</house-keeping-sleep-time>

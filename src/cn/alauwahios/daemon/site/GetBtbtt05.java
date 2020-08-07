@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import cn.alauwahios.daemon.Constants;
 import cn.alauwahios.daemon.core.HttpRequest;
 import cn.alauwahios.daemon.dao.AlauwahiosDao;
+import cn.alauwahios.daemon.util.JsonUtil;
 import cn.alauwahios.daemon.util.JsoupUtil;
 import cn.alauwahios.daemon.util.SleepUtil;
 import cn.alauwahios.daemon.util.StringUtil;
@@ -18,12 +19,12 @@ import cn.alauwahios.daemon.vo.FxZiyuanVO;
 
 public class GetBtbtt05 implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(GetBtbtt05.class);
-	private static final String HOME_URL = "http://www.2btjia.com"; // btbtt05
+	private static final String HOME_URL = "http://www.3btjia.com"; // btbtt05
 	// 第一页 https://www.btbtt05.com/forum-index-fid-1.htm
 	// 3btbtt
-	// 详情 https://www.btbtt05.com/thread-index-fid-1-tid-18740.htm
+	// 详情 https://www.btbtt05.com/thread-index-fid-1-tid-18740.htms
 	// 起始页
-	private static final int startPage = 32454;
+	private static final int startPage = 43189;
 
 	public void run() {
 		getBtZiyuan();
@@ -42,14 +43,16 @@ public class GetBtbtt05 implements Runnable {
 
 	public void getBtZiyuan() {
 		int maxPid = getLastPage();
+		String url = "";
 		try {
-			for (int i = maxPid + 1; i < maxPid + 130; i++) {
-				String url = HOME_URL + "/thread-index-fid-1-tid-" + i + ".htm";
+			for (int i = maxPid + 1; i < maxPid + 30; i++) {
+				url = HOME_URL + "/thread-index-fid-1-tid-" + i + ".htm";
 				System.out.println(url);
 				Document doc = JsoupUtil.getDocByConnect(url);
+				System.out.println("doc="+doc);
 				String title = doc.select("title").text();
 				// 将过滤某些字样
-				
+				//System.out.println("title="+title);
 				if(StringUtil.isNullOrBlank(title)){
 					continue;
 				}
@@ -57,7 +60,6 @@ public class GetBtbtt05 implements Runnable {
 				title = title.replace("[BT下载]", "");
 				title = title.replace("电影下载 ", "");
 				
-				System.out.println(title);
 				Elements eles = doc.getElementsByClass("attachlist").select("td").select("a");
 				String urlTor = "";
 				for (Element e : eles) {
@@ -91,7 +93,7 @@ public class GetBtbtt05 implements Runnable {
 				SleepUtil.sleepBySecond(2, 4);
 			}
 		} catch (Exception e) {
-			logger.error("[btbtt资源抓取出错了]，将重新抓取", e);
+			logger.error("[btbtt资源抓取出错了]，将重新抓取,url=" + url, e);
 			SleepUtil.sleepBySecond(120, 150);
 			getBtZiyuan();
 		}

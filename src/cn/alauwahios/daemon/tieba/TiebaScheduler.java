@@ -32,7 +32,7 @@ public class TiebaScheduler {
 	
 	public static void main(String[] args) {
 		TiebaScheduler ts= new TiebaScheduler();
-		ts.link();
+		//ts.link();
 		ts.fx();
 	}
 }
