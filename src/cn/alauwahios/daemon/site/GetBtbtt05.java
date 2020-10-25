@@ -19,7 +19,7 @@ import cn.alauwahios.daemon.vo.FxZiyuanVO;
 
 public class GetBtbtt05 implements Runnable {
 	private static final Logger logger = LoggerFactory.getLogger(GetBtbtt05.class);
-	private static final String HOME_URL = "http://www.3btjia.com"; // btbtt05
+	private static final String HOME_URL = "http://www.7btjia.com"; // btbtt05
 	// 第一页 https://www.btbtt05.com/forum-index-fid-1.htm
 	// 3btbtt
 	// 详情 https://www.btbtt05.com/thread-index-fid-1-tid-18740.htms
@@ -49,7 +49,7 @@ public class GetBtbtt05 implements Runnable {
 				url = HOME_URL + "/thread-index-fid-1-tid-" + i + ".htm";
 				System.out.println(url);
 				Document doc = JsoupUtil.getDocByConnect(url);
-				System.out.println("doc="+doc);
+				//System.out.println("doc="+doc);
 				String title = doc.select("title").text();
 				// 将过滤某些字样
 				//System.out.println("title="+title);
@@ -90,7 +90,7 @@ public class GetBtbtt05 implements Runnable {
 				//System.out.println(JsonUtil.toJson(vo));
 				AlauwahiosDao.saveFxZiyuan(vo);
 
-				SleepUtil.sleepBySecond(2, 4);
+//				SleepUtil.sleepBySecond(2, 4);
 			}
 		} catch (Exception e) {
 			logger.error("[btbtt资源抓取出错了]，将重新抓取,url=" + url, e);

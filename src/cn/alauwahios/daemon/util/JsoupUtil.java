@@ -50,7 +50,10 @@ public class JsoupUtil {
 	        connect.header("Accept-Encoding", "gzip, deflate");
 	        connect.header("Cache-Control", "max-age=0");
 	        connect.header("Connection", "keep-alive");
-	        connect.header("Cookie", "bbs_sid=5f0818974500e70a; bbs_page=1; cck_lasttime=1596724324170; cck_count=2; bbs_lastonlineupdate="+updateTime+"; bbs_lastday=1596613765; timeoffset=%2B08");
+	        connect.header("Pragma", "no-cache");
+	        connect.header("Referer", "http://www.3btjia.com/forum-index-fid-1-page-1.htm");
+	        connect.header("Upgrade-Insecure-Requests", "1");
+	        connect.header("Cookie", "Cookie: bbs_page=1; bbs_sid=90b92f3261616b1c; cck_lasttime=1597502094884; cck_count=1; bbs_lastonlineupdate=1597434105; bbs_lastday=1597429633; timeoffset=%2B08");
 	        doc = connect.get();
 		} catch (IOException e) {
 			e.printStackTrace();
